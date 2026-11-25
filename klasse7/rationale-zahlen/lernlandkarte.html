@@ -1,0 +1,1479 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lernlandkarte – Rationale Zahlen (Klasse 7)</title>
+<style>
+  :root{
+    --ink:#22263a; --paper:#fdf6e3; --paper2:#f5ead0; --accent:#2a9d8f;
+    --good:#2a9d8f; --bad:#e63946; --warn:#f4a261; --shadow:0 6px 18px rgba(34,38,58,.18);
+    --radius:16px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    font-family:"Nunito","Segoe UI Rounded","Trebuchet MS","Segoe UI",system-ui,sans-serif;
+    color:var(--ink); background:#cfe8d5;
+    background-image:radial-gradient(circle at 20% 10%,#e3f3e6 0,transparent 40%),radial-gradient(circle at 80% 90%,#bfe0c8 0,transparent 45%);
+    min-height:100%;
+  }
+  button{font:inherit;cursor:pointer}
+  .btn{border:none;border-radius:999px;padding:.6em 1.1em;font-weight:800;background:#fff;color:var(--ink);box-shadow:0 3px 0 rgba(0,0,0,.18);transition:transform .08s}
+  .btn:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.18)}
+  .btn.primary{background:var(--accent);color:#fff}
+  .btn.hint{background:#ffe08a}
+  .btn.sol{background:#ffd0c2}
+  .btn.ghost{background:rgba(255,255,255,.7)}
+  .btn:disabled{opacity:.45;cursor:default}
+  header{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;justify-content:space-between;padding:.8rem 1.2rem}
+  header h1{margin:0;font-size:clamp(1.2rem,2.6vw,1.9rem);letter-spacing:.3px}
+  header h1 small{display:block;font-size:.55em;font-weight:600;opacity:.75}
+  .toolbar{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center}
+  .toolbar label{font-weight:700;font-size:.9rem;background:rgba(255,255,255,.7);padding:.35rem .7rem;border-radius:999px}
+  .toolbar select{font:inherit;border:none;background:transparent;font-weight:800}
+  #mapWrap{max-width:1100px;margin:0 auto;padding:0 1rem 1rem}
+  #mapSvg{width:100%;height:auto;display:block;border-radius:24px;box-shadow:var(--shadow);background:var(--paper)}
+  .progress{display:flex;align-items:center;gap:.7rem;margin:.7rem auto 0;max-width:1100px;padding:0 1rem;font-weight:700}
+  .bar{flex:1;height:14px;border-radius:99px;background:rgba(255,255,255,.7);overflow:hidden}
+  .bar>div{height:100%;width:0;background:linear-gradient(90deg,#2a9d8f,#8ac926);transition:width .5s}
+  .howto{max-width:1100px;margin:.6rem auto 1.5rem;padding:0 1rem;font-size:.95rem;opacity:.85}
+  .station{cursor:pointer}
+  .station:hover .node,.station:focus .node{transform:scale(1.08)}
+  .station .node{transition:transform .15s;transform-box:fill-box;transform-origin:center}
+  .station:focus{outline:none}
+
+  /* Modals */
+  .overlay{position:fixed;inset:0;background:rgba(20,24,40,.55);display:flex;align-items:center;justify-content:center;padding:1rem;z-index:50}
+  .overlay[hidden]{display:none}
+  .card{background:var(--paper);border-radius:22px;box-shadow:var(--shadow);max-width:560px;width:100%;padding:1.4rem 1.5rem;position:relative;max-height:92vh;overflow:auto}
+  .card h2{margin:.1rem 0 .6rem}
+  .card .close{position:absolute;top:.7rem;right:.8rem;border:none;background:none;font-size:1.5rem;line-height:1}
+  .card ul{padding-left:1.2rem}
+  .card .row{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1rem}
+  .badge{display:inline-flex;align-items:center;justify-content:center;width:2.6rem;height:2.6rem;border-radius:50%;color:#fff;font-size:1.3rem;margin-right:.5rem;vertical-align:middle}
+
+  /* Cheat sheet */
+  #cheat .card{max-width:900px}
+  .cs-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:.8rem}
+  .cs{background:#fff;border-radius:14px;padding:.8rem 1rem;border-left:7px solid var(--c,#2a9d8f)}
+  .cs h3{margin:.1rem 0 .4rem;font-size:1.05rem}
+  .cs p,.cs li{font-size:.93rem;line-height:1.4;margin:.25rem 0}
+  .cs ul{padding-left:1.1rem;margin:.2rem 0}
+  .ex{background:var(--paper2);border-radius:8px;padding:.15rem .45rem;font-weight:700;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+  .cs svg{max-width:100%;height:auto}
+  .cs.flash{animation:flash 1.2s}
+  @keyframes flash{0%,100%{box-shadow:none}30%{box-shadow:0 0 0 5px #ffd166}}
+
+  /* Fractions */
+  .fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;font-size:.9em;line-height:1.05;margin:0 .1em}
+  .fr>span:first-child{border-bottom:2px solid currentColor;padding:0 .15em}
+
+  /* Game */
+  #game{max-width:1000px;margin:0 auto;padding:.6rem 1rem 1.2rem}
+  #game[hidden]{display:none}
+  .hud{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;justify-content:space-between;margin-bottom:.5rem}
+  .hud h2{margin:0;font-size:clamp(1rem,2.2vw,1.4rem)}
+  .hearts{font-size:1.4rem;letter-spacing:2px}
+  .dots{display:flex;gap:6px}
+  .dots span{width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,.8);border:2px solid rgba(0,0,0,.15)}
+  .dots span.done{background:var(--good);border-color:var(--good)}
+  .dots span.now{background:#ffd166}
+  .stage{position:relative;border-radius:20px;overflow:hidden;box-shadow:var(--shadow);background:#9bd3f0}
+  #cv{display:block;width:100%;height:auto;aspect-ratio:3/1;touch-action:none}
+  .panel{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(20,24,40,.45);padding:1rem;z-index:40}
+  .panel[hidden]{display:none}
+  .panel .card{max-height:94vh;padding:1.1rem 1.3rem}
+  .controls{display:flex;gap:.8rem;margin-top:.7rem}
+  .controls .btn{flex:1;font-size:1.15rem;padding:.9rem;user-select:none;-webkit-user-select:none;touch-action:none}
+  .keys{font-size:.85rem;opacity:.75;margin-top:.4rem;text-align:center}
+  kbd{background:#fff;border-radius:6px;padding:.05rem .4rem;border:1px solid #ccc;font-family:inherit;font-weight:700}
+
+  /* Question */
+  #qCard{max-width:620px}
+  .qtop{display:flex;justify-content:space-between;align-items:center;font-weight:800;font-size:.85rem;opacity:.8}
+  .qtext{font-size:1.2rem;font-weight:700;margin:.5rem 0 .6rem;line-height:1.45}
+  .fig{display:flex;justify-content:center;margin:.3rem 0 .6rem}
+  .fig svg{max-width:100%;height:auto;background:#fff;border-radius:12px}
+  .answer{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
+  .answer input{font:inherit;font-size:1.25rem;font-weight:800;padding:.5rem .8rem;border-radius:12px;border:3px solid #d8cfb5;width:11rem;background:#fff}
+  .answer input:focus{outline:none;border-color:var(--accent)}
+  .pad{display:flex;gap:.3rem}
+  .pad button{border:none;border-radius:10px;background:#fff;font-weight:900;font-size:1.1rem;width:2.4rem;height:2.4rem;box-shadow:0 2px 0 rgba(0,0,0,.15)}
+  .mc{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.5rem;width:100%}
+  .mc button{border:3px solid #d8cfb5;background:#fff;border-radius:12px;padding:.6rem .7rem;font-weight:800;font-size:1.05rem;text-align:center}
+  .mc button:hover:not(:disabled){border-color:var(--accent)}
+  .mc button.wrong{border-color:var(--bad);background:#fde2e4;opacity:.75}
+  .mc button.right{border-color:var(--good);background:#d8f3ee}
+  .qbtns{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.8rem}
+  .fb{margin-top:.6rem;font-weight:800;min-height:1.3em}
+  .fb.bad{color:var(--bad)} .fb.good{color:var(--good)}
+  .box{border-radius:12px;padding:.6rem .8rem;margin-top:.6rem;line-height:1.45}
+  .box.hint{background:#fff3c4}
+  .box.sol{background:#e2f4ef}
+  .box b.t{display:block;margin-bottom:.15rem}
+  .pulse{animation:pulse 1s infinite}
+  @keyframes pulse{50%{transform:scale(1.06)}}
+  .stars{font-size:2.4rem;letter-spacing:4px;text-align:center;margin:.3rem 0}
+
+  /* Material & Checkliste */
+  .mat{background:#fff;border-radius:12px;padding:.5rem .8rem;font-size:.93rem;margin-top:.6rem}
+  .mat ul{margin:.2rem 0 0;padding-left:1.1rem}
+  #check .card{max-width:820px}
+  .ck-st{background:#fff;border-radius:14px;padding:.6rem .9rem;margin-bottom:.7rem;border-left:7px solid var(--c,#2a9d8f);break-inside:avoid}
+  .ck-st h3{margin:.1rem 0 .3rem;font-size:1.02rem;display:flex;justify-content:space-between;gap:.5rem;flex-wrap:wrap}
+  .ck-st h3 small{font-weight:700;color:#f4a100}
+  .ck-row{display:flex;align-items:center;justify-content:space-between;gap:.6rem;padding:.3rem 0;border-top:1px dashed #e6dcc0;font-size:.93rem}
+  .ck-row:first-of-type{border-top:none}
+  .ck-btns{display:flex;gap:.25rem;flex-shrink:0}
+  .ck-btns button{border:2px solid #e6dcc0;background:#fdf6e3;border-radius:10px;font-size:1.15rem;width:2.3rem;height:2.1rem;padding:0;opacity:.55}
+  .ck-btns button.on{opacity:1;border-color:var(--accent);background:#d8f3ee}
+  .ck-legend{font-size:.88rem;opacity:.8;margin:.2rem 0 .8rem}
+
+  @media print{
+    body{background:#fff}
+    body>*:not(.printme){display:none!important}
+    .printme{position:static!important;background:none!important;display:block!important;padding:0!important}
+    .printme .card{box-shadow:none;max-height:none;max-width:none;padding:0;background:#fff}
+    .printme .close,.printme .noprint{display:none!important}
+    .cs{break-inside:avoid;border:1px solid #ccc;border-left:7px solid var(--c)}
+    .ck-st{border:1px solid #ccc;border-left:7px solid var(--c)}
+    .ck-btns button{opacity:1}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ KARTE ============ -->
+<div id="mapScreen">
+  <header>
+    <h1>🗺️ Lernlandkarte: Rationale Zahlen<small>Jahrgang 7 · Tippe auf eine Station und lauf los!</small></h1>
+    <div class="toolbar">
+      <label>Tempo:
+        <select id="tempo">
+          <option value="4.6">🐢 gemütlich</option>
+          <option value="6" selected>🏃 normal</option>
+          <option value="7.4">🚀 schnell</option>
+        </select>
+      </label>
+      <button class="btn primary" id="openCheat">📝 Spickzettel</button>
+      <button class="btn primary" id="openCheck" style="background:#3a86ff">✅ Checkliste</button>
+      <button class="btn ghost" id="resetBtn" title="Fortschritt löschen">↺ Neu</button>
+    </div>
+  </header>
+  <div id="mapWrap"><svg id="mapSvg" viewBox="0 0 1000 620" role="img" aria-label="Lernlandkarte mit Stationen"></svg></div>
+  <div class="progress"><span id="progTxt"></span><div class="bar"><div id="progBar"></div></div><span id="starTxt"></span></div>
+  <p class="howto"><b>So geht's:</b> Wähle eine Station. Dein Männchen läuft los – <b>springe</b> über Kisten und <b>ducke dich</b> unter Balken. An jedem <b>?-Tor</b> wartet eine Aufgabe. Brauchst du Hilfe, nutze den 💡 Hinweis, die Lösung oder den 📝 Spickzettel. Weniger Fehlversuche und Hilfen = mehr Sterne!<br>
+  <b>Jeder Durchgang ist anders</b> – die Aufgaben werden neu gemischt. Am Ende wartet die 🏆 <b>Generalprobe</b> mit gemischten Aufgaben wie in der Klassenarbeit. In der ✅ <b>Checkliste</b> schätzt du ein, was du schon kannst, und siehst, mit welchem Arbeitsblatt du wiederholen kannst.</p>
+</div>
+
+<!-- ============ STATIONSKARTE ============ -->
+<div class="overlay" id="stationCard" hidden>
+  <div class="card">
+    <button class="close" data-close="stationCard" aria-label="Schließen">✕</button>
+    <h2 id="scTitle"></h2>
+    <p><b>Ich kann …</b></p>
+    <ul id="scCan"></ul>
+    <div class="mat" id="scMat"></div>
+    <p id="scStars"></p>
+    <div class="row">
+      <button class="btn primary" id="scGo">▶ Los geht's</button>
+      <button class="btn hint" id="scCheat">📝 Spickzettel zum Thema</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SPIEL ============ -->
+<section id="game" hidden>
+  <div class="hud">
+    <button class="btn ghost" id="backMap">🗺️ Karte</button>
+    <h2 id="gTitle"></h2>
+    <div class="dots" id="gDots"></div>
+    <div class="hearts" id="gHearts"></div>
+    <button class="btn ghost" id="gCheat">📝 Spickzettel</button>
+  </div>
+  <div class="stage" id="stage">
+    <canvas id="cv"></canvas>
+
+    <div class="panel" id="pStart">
+      <div class="card" style="max-width:460px;text-align:center">
+        <h2 id="psTitle"></h2>
+        <p>⬆ <b>Springen</b> über Kisten · ⬇ <b>Ducken</b> unter Balken<br>An jedem <b>?-Tor</b> löst du eine Aufgabe.</p>
+        <p class="keys">Tastatur: <kbd>Leertaste</kbd>/<kbd>↑</kbd> springen · <kbd>↓</kbd> ducken (halten)</p>
+        <button class="btn primary" id="psGo" style="font-size:1.2rem">▶ Start</button>
+      </div>
+    </div>
+
+    <div class="panel" id="pQuestion" hidden>
+      <div class="card" id="qCard">
+        <div class="qtop"><span id="qNum"></span><span id="qTopic"></span></div>
+        <div class="qtext" id="qText"></div>
+        <div class="fig" id="qFig"></div>
+        <div id="qAnswer"></div>
+        <div class="fb" id="qFb"></div>
+        <div id="qBoxes"></div>
+        <div class="qbtns" id="qBtns">
+          <button class="btn hint" id="qHint">💡 Hinweis</button>
+          <button class="btn sol" id="qSol">🔍 Lösung zeigen</button>
+          <button class="btn ghost" id="qCheat">📝 Spickzettel</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" id="pOver" hidden>
+      <div class="card" style="max-width:420px;text-align:center">
+        <h2>Autsch! 💥</h2>
+        <p>Keine Herzen mehr. Versuch's gleich nochmal – du schaffst das!</p>
+        <div class="row" style="justify-content:center">
+          <button class="btn primary" id="poRetry">↻ Station neu starten</button>
+          <button class="btn ghost" id="poMap">🗺️ Zur Karte</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" id="pDone" hidden>
+      <div class="card" style="max-width:440px;text-align:center">
+        <h2>🏁 Station geschafft!</h2>
+        <div class="stars" id="pdStars"></div>
+        <p id="pdInfo"></p>
+        <div class="row" style="justify-content:center">
+          <button class="btn primary" id="pdNext">Nächste Station ▶</button>
+          <button class="btn ghost" id="pdAgain">↻ Nochmal</button>
+          <button class="btn ghost" id="pdMap">🗺️ Karte</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="controls">
+    <button class="btn primary" id="cJump">⬆ Springen</button>
+    <button class="btn" id="cDuck" style="background:#ffd166">⬇ Ducken (halten)</button>
+  </div>
+  <p class="keys">Tastatur: <kbd>Leertaste</kbd> oder <kbd>↑</kbd> = springen · <kbd>↓</kbd> halten = ducken · Auf dem Tablet: obere Bildhälfte tippen = springen, untere halten = ducken</p>
+</section>
+
+<!-- ============ SPICKZETTEL ============ -->
+<div class="overlay" id="cheat" hidden>
+  <div class="card">
+    <button class="close" data-close="cheat" aria-label="Schließen">✕</button>
+    <h2>📝 Spickzettel: Rationale Zahlen</h2>
+    <p class="noprint" style="margin-top:0"><button class="btn ghost" onclick="printOverlay('cheat')">🖨️ Drucken</button></p>
+    <div class="cs-grid" id="csGrid"></div>
+  </div>
+</div>
+
+<!-- ============ CHECKLISTE ============ -->
+<div class="overlay" id="check" hidden>
+  <div class="card">
+    <button class="close" data-close="check" aria-label="Schließen">✕</button>
+    <h2>✅ Checkliste: Bin ich fit für die Klassenarbeit?</h2>
+    <p class="ck-legend">Schätze dich ehrlich ein: 😀 kann ich sicher · 🙂 kann ich meistens · 😟 muss ich noch üben.<br>Bei 😟 oder 🙂: Spiele die Station nochmal und wiederhole mit dem angegebenen Arbeitsblatt.</p>
+    <p class="noprint" style="margin-top:0"><button class="btn ghost" onclick="printOverlay('check')">🖨️ Drucken</button></p>
+    <div id="ckList"></div>
+  </div>
+</div>
+
+<script>
+/* ---------- Hilfsfunktionen ---------- */
+const F = (a,b) => `<span class="fr"><span>${a}</span><span>${b}</span></span>`;
+const M = '−'; // echtes Minuszeichen
+function fmt(v){
+  const r = Math.round(v*1000)/1000;
+  const s = String(Math.abs(r)).replace('.',',');
+  return (r<0? M : '') + s;
+}
+
+/* ---------- Abbildungen ---------- */
+function figLine({min,max,step=1,labelStep=1,marks=[]}){
+  const w=500,h=80,pad=26,y=48;
+  const sx=v=>pad+(v-min)/(max-min)*(w-2*pad);
+  let s=`<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}">`;
+  s+=`<line x1="${pad-14}" y1="${y}" x2="${w-pad+16}" y2="${y}" stroke="#22263a" stroke-width="2.5"/>`;
+  s+=`<polygon points="${w-pad+20},${y} ${w-pad+10},${y-6} ${w-pad+10},${y+6}" fill="#22263a"/>`;
+  const n=Math.round((max-min)/step);
+  for(let i=0;i<=n;i++){
+    const v=min+i*step, x=sx(v);
+    const isLab=Math.abs(v/labelStep-Math.round(v/labelStep))<1e-9;
+    s+=`<line x1="${x}" y1="${y-(isLab?9:5)}" x2="${x}" y2="${y+(isLab?9:5)}" stroke="#22263a" stroke-width="${isLab?2.2:1.4}"/>`;
+    if(isLab) s+=`<text x="${x}" y="${y+26}" font-size="14" text-anchor="middle" font-weight="700" fill="#22263a">${fmt(v)}</text>`;
+  }
+  marks.forEach(m=>{
+    const x=sx(m.x);
+    s+=`<circle cx="${x}" cy="${y}" r="7" fill="#e63946" stroke="#fff" stroke-width="2"/>`;
+    s+=`<text x="${x}" y="${y-16}" font-size="17" text-anchor="middle" font-weight="900" fill="#e63946">${m.label}</text>`;
+  });
+  return s+'</svg>';
+}
+function figGrid({min=-5,max=5,points=[],poly=false}){
+  const size=280,pad=22,c=(size-2*pad)/(max-min);
+  const X=v=>pad+(v-min)*c, Y=v=>size-pad-(v-min)*c;
+  let s=`<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">`;
+  for(let v=min;v<=max;v++){
+    s+=`<line x1="${X(v)}" y1="${Y(min)}" x2="${X(v)}" y2="${Y(max)}" stroke="#dfe6ee" stroke-width="1"/>`;
+    s+=`<line x1="${X(min)}" y1="${Y(v)}" x2="${X(max)}" y2="${Y(v)}" stroke="#dfe6ee" stroke-width="1"/>`;
+  }
+  s+=`<line x1="${X(min)-8}" y1="${Y(0)}" x2="${X(max)+10}" y2="${Y(0)}" stroke="#22263a" stroke-width="2"/>`;
+  s+=`<line x1="${X(0)}" y1="${Y(min)+8}" x2="${X(0)}" y2="${Y(max)-10}" stroke="#22263a" stroke-width="2"/>`;
+  s+=`<polygon points="${X(max)+14},${Y(0)} ${X(max)+5},${Y(0)-5} ${X(max)+5},${Y(0)+5}" fill="#22263a"/>`;
+  s+=`<polygon points="${X(0)},${Y(max)-14} ${X(0)-5},${Y(max)-5} ${X(0)+5},${Y(max)-5}" fill="#22263a"/>`;
+  s+=`<text x="${X(max)+4}" y="${Y(0)+16}" font-size="12" font-weight="800">x</text>`;
+  s+=`<text x="${X(0)+7}" y="${Y(max)-4}" font-size="12" font-weight="800">y</text>`;
+  for(let v=min;v<=max;v++){ if(v===0) continue;
+    s+=`<text x="${X(v)}" y="${Y(0)+13}" font-size="9" text-anchor="middle" fill="#555">${fmt(v)}</text>`;
+    s+=`<text x="${X(0)-4}" y="${Y(v)+3}" font-size="9" text-anchor="end" fill="#555">${fmt(v)}</text>`;
+  }
+  if(poly && points.length>1){
+    s+=`<polyline points="${points.map(p=>X(p.x)+','+Y(p.y)).join(' ')}" fill="none" stroke="#2a9d8f" stroke-width="2.5" stroke-dasharray="5 4"/>`;
+  }
+  points.forEach(p=>{
+    s+=`<circle cx="${X(p.x)}" cy="${Y(p.y)}" r="5.5" fill="#e63946" stroke="#fff" stroke-width="1.5"/>`;
+    s+=`<text x="${X(p.x)+7}" y="${Y(p.y)-7}" font-size="15" font-weight="900" fill="#e63946">${p.label}</text>`;
+  });
+  return s+'</svg>';
+}
+
+/* ---------- Stationen & Aufgaben ----------
+   Jede Station besteht aus "Slots". Ein Slot ist entweder eine Aufgabe oder eine Liste
+   von gleichwertigen Varianten – pro Durchlauf wird je Slot zufällig eine Variante gezogen.
+   So wird jede Fähigkeit geübt, aber jeder Durchgang sieht etwas anders aus. */
+const STATIONS = [
+ { name:'Zahlengerade', icon:'📏', color:'#e76f51',
+   mat:['AB 01 Einstieg (Temperaturen)','AB 02 Übung'],
+   can:['Zahlen an der Zahlengeraden ablesen und eintragen','rationale Zahlen vergleichen und der Größe nach ordnen','Zahlen finden, die von einer Zahl einen bestimmten Abstand haben'],
+   tasks:[
+    [
+     {q:'Welche Zahl gehört zum Punkt A?', fig:{t:'line',min:-5,max:5,marks:[{x:-3,label:'A'}]}, type:'num', answer:-3,
+      hint:'Negative Zahlen liegen links von der 0. Zähle die Striche von der 0 aus.',
+      sol:`A liegt 3 Einheiten <b>links</b> von 0. Also ist A = <b>${M}3</b>.`},
+     {q:'Welche Zahl gehört zum Punkt B?', fig:{t:'line',min:-3,max:3,step:0.5,labelStep:1,marks:[{x:-1.5,label:'B'}]}, type:'num', answer:-1.5,
+      hint:'Zwischen zwei ganzen Zahlen liegt hier ein kleiner Strich – er steht für eine halbe Einheit.',
+      sol:`B liegt genau zwischen ${M}1 und ${M}2. Also ist B = <b>${M}1,5</b>.`},
+     {q:'Welche Zahl gehört zum Punkt C?', fig:{t:'line',min:-10,max:10,step:1,labelStep:5,marks:[{x:-7,label:'C'}]}, type:'num', answer:-7,
+      hint:'Beschriftet ist nur jeder 5. Strich. Starte bei −5 und zähle weiter nach links.',
+      sol:`Von ${M}5 aus noch 2 Striche nach links: C = <b>${M}7</b>.`},
+    ],
+    [
+     {q:`Welche Zahl ist größer: ${M}7 oder ${M}4?`, type:'mc', options:[`${M}7`,`${M}4`,'Beide sind gleich groß'], answer:`${M}4`,
+      hint:'Auf der Zahlengeraden gilt: Je weiter rechts eine Zahl liegt, desto größer ist sie.',
+      sol:`${M}4 liegt weiter rechts als ${M}7. Also gilt <b>${M}4 &gt; ${M}7</b>.`},
+     {q:`Welche Aussage stimmt?`, type:'mc', options:[`${M}0,5 &gt; ${M}2`,`${M}0,5 &lt; ${M}2`,`${M}3 &gt; 0`,`${M}1 &gt; 1`], answer:`${M}0,5 &gt; ${M}2`,
+      hint:'Stell dir beide Zahlen auf der Zahlengeraden vor. Welche liegt weiter rechts?',
+      sol:`${M}0,5 liegt näher an der 0, also weiter rechts als ${M}2: <b>${M}0,5 &gt; ${M}2</b>.`},
+    ],
+    [
+     {q:`Ordne der Größe nach. Beginne mit der kleinsten Zahl:<br>${M}1,5 ; 2,3 ; ${M}4 ; 0 ; ${M}0,5`, type:'mc',
+      options:[`${M}4 &lt; ${M}1,5 &lt; ${M}0,5 &lt; 0 &lt; 2,3`,`${M}0,5 &lt; ${M}1,5 &lt; ${M}4 &lt; 0 &lt; 2,3`,`0 &lt; ${M}0,5 &lt; ${M}1,5 &lt; 2,3 &lt; ${M}4`,`${M}4 &lt; ${M}0,5 &lt; ${M}1,5 &lt; 0 &lt; 2,3`],
+      answer:`${M}4 &lt; ${M}1,5 &lt; ${M}0,5 &lt; 0 &lt; 2,3`,
+      hint:'Bei negativen Zahlen gilt: Je größer der Betrag, desto kleiner die Zahl. −4 ist also die kleinste.',
+      sol:`Von links nach rechts auf der Zahlengeraden: <b>${M}4 &lt; ${M}1,5 &lt; ${M}0,5 &lt; 0 &lt; 2,3</b>.`},
+     {q:`Ordne der Größe nach (kleinste Zahl zuerst): 0,5 ; ${M}2 ; ${M}0,5 ; 1 ; ${M}2,5`, type:'mc',
+      options:[`${M}2,5 &lt; ${M}2 &lt; ${M}0,5 &lt; 0,5 &lt; 1`,`${M}2 &lt; ${M}2,5 &lt; ${M}0,5 &lt; 0,5 &lt; 1`,`${M}0,5 &lt; ${M}2 &lt; ${M}2,5 &lt; 0,5 &lt; 1`,`${M}2,5 &lt; ${M}0,5 &lt; ${M}2 &lt; 0,5 &lt; 1`],
+      answer:`${M}2,5 &lt; ${M}2 &lt; ${M}0,5 &lt; 0,5 &lt; 1`,
+      hint:'Stell dir alle Zahlen auf der Zahlengeraden vor. Bei negativen Zahlen ist die mit dem größeren Betrag die kleinere Zahl.',
+      sol:`Von links nach rechts: <b>${M}2,5 &lt; ${M}2 &lt; ${M}0,5 &lt; 0,5 &lt; 1</b>.`},
+    ],
+    [
+     {q:`Gib <b>alle</b> ganzen Zahlen an, die von 2 genau fünf Einheiten entfernt sind.`, fig:{t:'line',min:-5,max:9}, type:'set', answer:[-3,7],
+      hint:'Es gibt immer zwei Möglichkeiten: 5 Schritte nach rechts UND 5 Schritte nach links.',
+      sol:`2 + 5 = 7 und 2 ${M} 5 = ${M}3. Gesucht sind <b>${M}3 und 7</b>.`},
+     {q:`Gib <b>alle</b> ganzen Zahlen an, die von ${M}2 genau drei Einheiten entfernt sind.`, fig:{t:'line',min:-7,max:3}, type:'set', answer:[-5,1],
+      hint:'Gehe von −2 aus 3 Schritte nach rechts UND 3 Schritte nach links.',
+      sol:`${M}2 + 3 = 1 und ${M}2 ${M} 3 = ${M}5. Gesucht sind <b>${M}5 und 1</b>.`},
+     {q:`Gib <b>alle</b> ganzen Zahlen an, die <b>zwischen</b> ${M}8 und ${M}5 liegen.`, fig:{t:'line',min:-10,max:0}, type:'set', answer:[-7,-6],
+      hint:'„Zwischen“ heißt: −8 und −5 selbst zählen nicht mit.',
+      sol:`Zwischen ${M}8 und ${M}5 liegen <b>${M}7 und ${M}6</b>.`},
+    ],
+    [
+     {q:`Welche Zahl liegt genau in der Mitte zwischen ${M}6 und 2?`, fig:{t:'line',min:-7,max:3,marks:[{x:-6,label:''},{x:2,label:''}]}, type:'num', answer:-2,
+      hint:'Bestimme zuerst den Abstand der beiden Zahlen. Gehe dann die Hälfte davon von einer Zahl aus.',
+      sol:`Abstand: von ${M}6 bis 2 sind es 8 Einheiten. Die Hälfte ist 4. ${M}6 + 4 = <b>${M}2</b>.`},
+     {q:`Welche Zahl liegt genau in der Mitte zwischen ${M}9 und ${M}3?`, fig:{t:'line',min:-10,max:0,marks:[{x:-9,label:''},{x:-3,label:''}]}, type:'num', answer:-6,
+      hint:'Der Abstand beträgt 6 Einheiten. Gehe die Hälfte davon von −9 nach rechts.',
+      sol:`Abstand 6, Hälfte 3: ${M}9 + 3 = <b>${M}6</b>.`},
+    ],
+   ]},
+ { name:'Koordinatensystem', icon:'🧭', color:'#f4a261',
+   mat:['Heft / Buch: Koordinatensystem mit 4 Quadranten'],
+   can:['Punkte in allen vier Quadranten ablesen und eintragen','den Quadranten eines Punktes bestimmen','fehlende Eckpunkte von Rechtecken bestimmen','Punkte und Figuren verschieben'],
+   tasks:[
+    [
+     {q:'Welche Koordinaten hat der Punkt P?', fig:{t:'grid',points:[{x:-3,y:2,label:'P'}]}, type:'mc',
+      options:[`P(${M}3|2)`,`P(2|${M}3)`,'P(3|2)',`P(${M}3|${M}2)`], answer:`P(${M}3|2)`,
+      hint:'Zuerst die x-Koordinate (rechts/links), dann die y-Koordinate (hoch/runter).',
+      sol:`Von 0 aus 3 nach <b>links</b> (x = ${M}3) und 2 nach <b>oben</b> (y = 2): <b>P(${M}3|2)</b>.`},
+     {q:`Welcher Punkt hat die Koordinaten (${M}1|${M}3)?`, fig:{t:'grid',points:[{x:1,y:3,label:'A'},{x:-1,y:-3,label:'B'},{x:-3,y:-1,label:'C'},{x:3,y:-1,label:'D'}]}, type:'mc',
+      options:['A','B','C','D'], answer:'B',
+      hint:'Gehe 1 nach links und dann 3 nach unten.',
+      sol:`1 nach links, 3 nach unten – dort liegt <b>B</b>. (Achtung: C ist (${M}3|${M}1), da sind x und y vertauscht.)`},
+    ],
+    [
+     {q:`In welchem Quadranten liegt der Punkt Q(4|${M}5)?`, type:'mc', options:['I','II','III','IV'], answer:'IV',
+      hint:'x positiv → rechts, y negativ → unten. Die Quadranten werden gegen den Uhrzeigersinn gezählt, beginnend rechts oben.',
+      sol:'Q liegt rechts unten. Das ist der <b>IV. Quadrant</b> (+|−).'},
+     {q:`In welchem Quadranten liegt der Punkt R(${M}3|${M}4)?`, type:'mc', options:['I','II','III','IV'], answer:'III',
+      hint:'x negativ → links, y negativ → unten.',
+      sol:'R liegt links unten. Das ist der <b>III. Quadrant</b> (−|−).'},
+     {q:`In welchem Quadranten liegt der Punkt S(${M}2|5)?`, type:'mc', options:['I','II','III','IV'], answer:'II',
+      hint:'x negativ → links, y positiv → oben.',
+      sol:'S liegt links oben. Das ist der <b>II. Quadrant</b> (−|+).'},
+    ],
+    [
+     {q:`A(${M}4|${M}1), B(2|${M}1) und C(2|3) sind Ecken eines Rechtecks ABCD. Welche Koordinaten hat D?`, fig:{t:'grid',poly:true,points:[{x:-4,y:-1,label:'A'},{x:2,y:-1,label:'B'},{x:2,y:3,label:'C'}]}, type:'mc',
+      options:[`D(${M}4|3)`,`D(3|${M}4)`,`D(${M}2|3)`,`D(${M}4|${M}3)`], answer:`D(${M}4|3)`,
+      hint:'D liegt genau über A (gleiche x-Koordinate) und auf derselben Höhe wie C (gleiche y-Koordinate).',
+      sol:`x wie A: ${M}4, y wie C: 3. Also <b>D(${M}4|3)</b>.`},
+     {q:`A(${M}2|${M}3), B(4|${M}3) und C(4|1) sind Ecken eines Rechtecks ABCD. Welche Koordinaten hat D?`, fig:{t:'grid',poly:true,points:[{x:-2,y:-3,label:'A'},{x:4,y:-3,label:'B'},{x:4,y:1,label:'C'}]}, type:'mc',
+      options:[`D(${M}2|1)`,`D(1|${M}2)`,`D(${M}2|${M}1)`,`D(4|${M}2)`], answer:`D(${M}2|1)`,
+      hint:'D hat dieselbe x-Koordinate wie A und dieselbe y-Koordinate wie C.',
+      sol:`x wie A: ${M}2, y wie C: 1. Also <b>D(${M}2|1)</b>.`},
+    ],
+    [
+     {q:`Der Punkt A(${M}2|3) wird um 5 Einheiten <b>nach unten</b> verschoben. Welche Koordinaten hat A'?`, type:'mc',
+      options:[`A'(${M}2|${M}2)`,`A'(3|3)`,`A'(${M}7|3)`,`A'(${M}2|8)`], answer:`A'(${M}2|${M}2)`,
+      hint:'Nach oben/unten verschieben ändert nur die y-Koordinate. Nach unten heißt: y wird kleiner.',
+      sol:`x bleibt ${M}2. y: 3 ${M} 5 = ${M}2. Also <b>A'(${M}2|${M}2)</b>.`},
+     {q:`Der Punkt B(1|${M}2) wird um 3 Einheiten <b>nach links</b> verschoben. Welche Koordinaten hat B'?`, type:'mc',
+      options:[`B'(${M}2|${M}2)`,`B'(4|${M}2)`,`B'(1|${M}5)`,`B'(1|1)`], answer:`B'(${M}2|${M}2)`,
+      hint:'Nach links/rechts verschieben ändert nur die x-Koordinate. Nach links heißt: x wird kleiner.',
+      sol:`x: 1 ${M} 3 = ${M}2. y bleibt ${M}2. Also <b>B'(${M}2|${M}2)</b>.`},
+     {q:`Der Punkt C(${M}3|${M}1) wird um 4 Einheiten <b>nach unten</b> verschoben. Welche Koordinaten hat C'?`, type:'mc',
+      options:[`C'(${M}3|${M}5)`,`C'(${M}3|3)`,`C'(${M}7|${M}1)`,`C'(1|${M}1)`], answer:`C'(${M}3|${M}5)`,
+      hint:'Nur die y-Koordinate ändert sich – sie wird um 4 kleiner.',
+      sol:`x bleibt ${M}3. y: ${M}1 ${M} 4 = ${M}5. Also <b>C'(${M}3|${M}5)</b>.`},
+    ],
+    [
+     {q:`Der Punkt P(2|${M}4) wird an der x-Achse gespiegelt. Welche Koordinaten hat der Bildpunkt P'?`, type:'mc',
+      options:["P'(2|4)",`P'(${M}2|${M}4)`,`P'(${M}2|4)`,"P'(4|2)"], answer:"P'(2|4)",
+      hint:'Bei der Spiegelung an der x-Achse bleibt x gleich – nur das Vorzeichen von y ändert sich.',
+      sol:`x bleibt 2, y wechselt von ${M}4 zu 4: <b>P'(2|4)</b>.`},
+     {q:`Ein Rechteck hat die Ecken A(${M}3|${M}2), B(3|${M}2), C(3|1), D(${M}3|1). Wie viele Einheiten ist die Seite AB lang?`, fig:{t:'grid',poly:true,points:[{x:-3,y:-2,label:'A'},{x:3,y:-2,label:'B'},{x:3,y:1,label:'C'},{x:-3,y:1,label:'D'}]}, type:'num', answer:6,
+      hint:'Zähle die Kästchen von A nach B – oder rechne den Abstand der x-Koordinaten aus: 3 − (−3).',
+      sol:`3 ${M} (${M}3) = 3 + 3 = <b>6</b> Einheiten.`},
+    ],
+   ]},
+ { name:'Betrag & Gegenzahl', icon:'🎯', color:'#e9c46a',
+   mat:['AB 02 Übung (Aufgaben 1, 3, 4)'],
+   can:['den Betrag einer Zahl bestimmen','die Gegenzahl einer Zahl angeben','Zahlen nach ihren Beträgen ordnen'],
+   tasks:[
+    [
+     {q:`Berechne |${M}8|.`, type:'num', answer:8,
+      hint:'Der Betrag ist der Abstand einer Zahl zur 0. Ein Abstand ist nie negativ.',
+      sol:`${M}8 ist 8 Einheiten von der 0 entfernt: |${M}8| = <b>8</b>.`},
+     {q:`Berechne |${M}4,5|.`, type:'num', answer:4.5,
+      hint:'Der Betrag ist der Abstand zur 0 – also immer ohne Minus.',
+      sol:`|${M}4,5| = <b>4,5</b>.`},
+    ],
+    [
+     {q:`Gib die Gegenzahl von 6,5 an.`, type:'num', answer:-6.5,
+      hint:'Die Gegenzahl liegt gleich weit von der 0 entfernt – aber auf der anderen Seite.',
+      sol:`Die Gegenzahl von 6,5 ist <b>${M}6,5</b>.`},
+     {q:`Gib die Gegenzahl von ${M}12 an.`, type:'num', answer:12,
+      hint:'Gegenzahl: Vorzeichen wechseln.',
+      sol:`Die Gegenzahl von ${M}12 ist <b>12</b>.`},
+    ],
+    [
+     {q:`Welche Angabe zur Zahl ${M}9 ist richtig?`, type:'mc',
+      options:['Betrag: 9 · Gegenzahl: 9',`Betrag: ${M}9 · Gegenzahl: 9`,`Betrag: 9 · Gegenzahl: ${M}9`,`Betrag: ${M}9 · Gegenzahl: ${M}9`], answer:'Betrag: 9 · Gegenzahl: 9',
+      hint:'Betrag = Abstand zur 0 (nie negativ). Gegenzahl = Vorzeichen wechseln.',
+      sol:`|${M}9| = 9 und die Gegenzahl von ${M}9 ist 9. Hier sind Betrag und Gegenzahl also <b>beide 9</b>.`},
+     {q:`Welche Angabe zur Zahl 2,5 ist richtig?`, type:'mc',
+      options:[`Betrag: 2,5 · Gegenzahl: ${M}2,5`,`Betrag: ${M}2,5 · Gegenzahl: 2,5`,`Betrag: 2,5 · Gegenzahl: 2,5`,`Betrag: ${M}2,5 · Gegenzahl: ${M}2,5`], answer:`Betrag: 2,5 · Gegenzahl: ${M}2,5`,
+      hint:'Betrag = Abstand zur 0 (nie negativ). Gegenzahl = Vorzeichen wechseln.',
+      sol:`|2,5| = 2,5 und die Gegenzahl ist <b>${M}2,5</b>.`},
+    ],
+    [
+     {q:'Welche Zahlen haben den Betrag 6?', type:'mc', options:[`6 und ${M}6`,'nur 6',`nur ${M}6`,'0 und 6'], answer:`6 und ${M}6`,
+      hint:'Welche Zahlen sind 6 Einheiten von der 0 entfernt? Schau nach rechts UND nach links.',
+      sol:`Sowohl 6 als auch ${M}6 haben den Abstand 6 zur 0: <b>6 und ${M}6</b>.`},
+     {q:`Welche Zahl hat den größeren Betrag: ${M}9 oder 5?`, type:'mc', options:[`${M}9`,'5','Beide gleich'], answer:`${M}9`,
+      hint:'Vergleiche die Abstände zur 0 – das Vorzeichen spielt dabei keine Rolle.',
+      sol:`|${M}9| = 9 und |5| = 5. Also hat <b>${M}9</b> den größeren Betrag (obwohl ${M}9 die kleinere Zahl ist!).`},
+    ],
+    [
+     {q:`Ordne nach den <b>Beträgen</b> (kleinster Betrag zuerst): ${M}3 ; 1 ; ${M}0,5 ; 2`, type:'mc',
+      options:[`${M}0,5 ; 1 ; 2 ; ${M}3`,`${M}3 ; ${M}0,5 ; 1 ; 2`,`1 ; 2 ; ${M}0,5 ; ${M}3`,`${M}0,5 ; ${M}3 ; 1 ; 2`], answer:`${M}0,5 ; 1 ; 2 ; ${M}3`,
+      hint:'Schreibe zu jeder Zahl zuerst den Betrag auf: 3 ; 1 ; 0,5 ; 2. Ordne dann.',
+      sol:`Beträge: 0,5 &lt; 1 &lt; 2 &lt; 3 → <b>${M}0,5 ; 1 ; 2 ; ${M}3</b>.`},
+     {q:`Berechne |3 ${M} 7|.`, type:'num', answer:4,
+      hint:'Rechne zuerst innerhalb der Betragsstriche, dann nimm den Betrag.',
+      sol:`3 ${M} 7 = ${M}4 und |${M}4| = <b>4</b>.`},
+    ],
+   ]},
+ { name:'Zustand und Änderung', icon:'🌡️', color:'#8ac926',
+   mat:['AB 03 Einstieg Addieren + Subtrahieren'],
+   can:['Situationen als Rechnung „Zustand + Änderung“ aufschreiben','Änderungen berechnen (neu − alt)','neue Zustände berechnen'],
+   tasks:[
+    [
+     {q:`Morgens zeigt das Thermometer ${M}4 °C. Bis zum Mittag steigt die Temperatur um 7 °C. Wie warm ist es mittags (in °C)?`, type:'num', answer:3,
+      hint:'Neuer Zustand = alter Zustand + Änderung. Steigen ist eine positive Änderung.',
+      sol:`${M}4 + 7 = <b>3</b> → Mittags sind es 3 °C.`},
+     {q:`Abends sind es ${M}4 °C. In der Nacht wird es 6 Grad kälter. Wie kalt ist es nachts (in °C)?`, type:'num', answer:-10,
+      hint:'Kälter werden ist eine negative Änderung: (−4) + (−6).',
+      sol:`(${M}4) + (${M}6) = <b>${M}10</b> → Nachts sind es ${M}10 °C.`},
+    ],
+    [
+     {q:`Leas Kontostand beträgt ${M}120 €. Sie zahlt 200 € ein. Wie hoch ist ihr neuer Kontostand (in €)?`, type:'num', answer:80,
+      hint:'Eine Einzahlung ist eine positive Änderung.',
+      sol:`${M}120 + 200 = <b>80</b> → Der neue Kontostand ist 80 €.`},
+     {q:`Tims Kontostand beträgt 35 €. Es werden 60 € abgebucht. Wie hoch ist der neue Kontostand (in €)?`, type:'num', answer:-25,
+      hint:'Eine Abbuchung ist eine negative Änderung (−60).',
+      sol:`35 + (${M}60) = 35 ${M} 60 = <b>${M}25</b> → Der Kontostand ist ${M}25 €.`},
+    ],
+    [
+     {q:`Die Temperatur fällt von 2 °C auf ${M}5 °C. Wie groß ist die Änderung (in °C)?`, type:'num', answer:-7,
+      hint:'Änderung = neuer Zustand − alter Zustand. Fällt die Temperatur, ist die Änderung negativ.',
+      sol:`${M}5 ${M} 2 = <b>${M}7</b> → Die Temperatur ändert sich um ${M}7 °C.`},
+     {q:`Morgens sind es ${M}2 °C, mittags 6 °C. Um wie viel Grad hat sich die Temperatur geändert?`, type:'num', answer:8,
+      hint:'Änderung = neuer Zustand − alter Zustand = 6 − (−2).',
+      sol:`6 ${M} (${M}2) = 6 + 2 = <b>8</b> → Die Temperatur ist um 8 °C gestiegen.`},
+    ],
+    [
+     {q:`Eine Taucherin befindet sich in ${M}12 m Tiefe. Sie steigt 5 m nach oben. Wo befindet sie sich jetzt (in m)?`, type:'num', answer:-7,
+      hint:'Nach oben steigen bedeutet: Die Zahl wird größer (+5).',
+      sol:`${M}12 + 5 = <b>${M}7</b> → Sie ist jetzt in 7 m Tiefe (${M}7 m).`},
+     {q:`Ein Fahrstuhl steht in Etage 2. Er fährt 5 Etagen nach unten. In welcher Etage ist er jetzt?`, type:'num', answer:-3,
+      hint:'Nach unten = negative Änderung: 2 + (−5).',
+      sol:`2 + (${M}5) = <b>${M}3</b> → Der Fahrstuhl ist im 3. Untergeschoss (Etage ${M}3).`},
+    ],
+    [
+     {q:`Welche Rechnung passt? „Kontostand ${M}25 €, Einzahlung von 40 €.“`, type:'mc',
+      options:[`(${M}25) + 40 = 15`,`(${M}25) ${M} 40 = ${M}65`,`25 + 40 = 65`,`40 ${M} 25 = 15`], answer:`(${M}25) + 40 = 15`,
+      hint:'Zustand + Änderung = neuer Zustand. Der Zustand ist −25, die Änderung +40.',
+      sol:`Zustand (${M}25) + Änderung (+40) = <b>15</b> → Der neue Kontostand ist 15 €.`},
+     {q:`Lenas Kontostand beträgt ${M}10 €. Eine falsche Abbuchung von 30 € wird storniert (also wieder weggenommen). Wie hoch ist der neue Kontostand (in €)?`, type:'num', answer:20,
+      hint:'Eine Abbuchung (−30) wird weggenommen: (−10) − (−30).',
+      sol:`(${M}10) ${M} (${M}30) = ${M}10 + 30 = <b>20</b> → Der neue Kontostand ist 20 €.`},
+    ],
+   ]},
+ { name:'Addieren & Subtrahieren', icon:'➕', color:'#2a9d8f',
+   mat:['AB 03 Übung (Basis / Plus / Expert)','AB 04 Rechnen mit negativen Zahlen (Plättchen)','07a Kopfrechentest'],
+   can:['rationale Zahlen mit gleichen und verschiedenen Vorzeichen addieren','rationale Zahlen subtrahieren (Gegenzahl addieren)','auch mit Dezimalzahlen und Brüchen rechnen','fehlende Zahlen in Lücken ergänzen'],
+   tasks:[
+    [
+     {q:`Berechne (${M}9) + 16.`, type:'num', answer:7,
+      hint:'Verschiedene Vorzeichen: Beträge subtrahieren (16 − 9). Das Ergebnis bekommt das Vorzeichen der Zahl mit dem größeren Betrag.',
+      sol:`16 ${M} 9 = 7; die 16 hat den größeren Betrag → <b>7</b>.`},
+     {q:`Berechne (${M}7) + 4.`, type:'num', answer:-3,
+      hint:'Verschiedene Vorzeichen: Beträge subtrahieren (7 − 4). Das Ergebnis bekommt das Vorzeichen der Zahl mit dem größeren Betrag.',
+      sol:`7 ${M} 4 = 3; die ${M}7 hat den größeren Betrag → <b>${M}3</b>.`},
+    ],
+    [
+     {q:`Berechne (${M}13) + (${M}8).`, type:'num', answer:-21,
+      hint:'Gleiche Vorzeichen: Beträge addieren, das Vorzeichen bleibt.',
+      sol:`13 + 8 = 21, Vorzeichen bleibt − → <b>${M}21</b>.`},
+     {q:`Berechne (${M}5) ${M} 8.`, type:'num', answer:-13,
+      hint:'Subtrahieren heißt: die Gegenzahl addieren. (−5) − 8 = (−5) + (−8).',
+      sol:`(${M}5) + (${M}8): gleiche Vorzeichen → 5 + 8 = 13, Vorzeichen bleibt − → <b>${M}13</b>.`},
+    ],
+    [
+     {q:`Berechne 7 ${M} 15.`, type:'num', answer:-8,
+      hint:'Du ziehst mehr ab, als da ist: Das Ergebnis wird negativ. 7 − 15 = 7 + (−15).',
+      sol:`7 + (${M}15) = <b>${M}8</b>.`},
+     {q:`Berechne (${M}6) ${M} (${M}13).`, type:'num', answer:7,
+      hint:'Eine negative Zahl subtrahieren = die positive Gegenzahl addieren: (−6) + 13.',
+      sol:`(${M}6) ${M} (${M}13) = ${M}6 + 13 = <b>7</b>.`},
+     {q:`Berechne 6 ${M} (${M}9).`, type:'num', answer:15,
+      hint:'Eine negative Zahl subtrahieren = die positive Gegenzahl addieren.',
+      sol:`6 ${M} (${M}9) = 6 + 9 = <b>15</b>.`},
+    ],
+    [
+     {q:`Berechne ${M}4,5 + 1,3.`, type:'num', answer:-3.2,
+      hint:'Verschiedene Vorzeichen: 4,5 − 1,3 rechnen. Die −4,5 hat den größeren Betrag.',
+      sol:`4,5 ${M} 1,3 = 3,2 → <b>${M}3,2</b>.`},
+     {q:`Berechne 0,8 ${M} 2,5.`, type:'num', answer:-1.7,
+      hint:'0,8 − 2,5 = 0,8 + (−2,5). Die −2,5 hat den größeren Betrag.',
+      sol:`2,5 ${M} 0,8 = 1,7 → <b>${M}1,7</b>.`},
+     {q:`Berechne (${M}0,6) ${M} (${M}2,4).`, type:'num', answer:1.8,
+      hint:'Eine negative Zahl subtrahieren = die Gegenzahl addieren: −0,6 + 2,4.',
+      sol:`${M}0,6 + 2,4 = <b>1,8</b>.`},
+    ],
+    [
+     {q:`Berechne ${M}${F(3,4)} + ${F(1,2)}. (Antwort als Bruch oder Dezimalzahl)`, type:'num', answer:-0.25,
+      hint:`Mache die Brüche gleichnamig: ${F(1,2)} = ${F(2,4)}.`,
+      sol:`${M}${F(3,4)} + ${F(2,4)} = <b>${M}${F(1,4)}</b> = ${M}0,25.`},
+     {q:`Berechne ${M}${F(2,5)} ${M} ${F(1,10)}. (Antwort als Bruch oder Dezimalzahl)`, type:'num', answer:-0.5,
+      hint:`Hauptnenner 10: ${F(2,5)} = ${F(4,10)}. Gleiche Vorzeichen (−4/10 und −1/10) → Beträge addieren.`,
+      sol:`${M}${F(4,10)} ${M} ${F(1,10)} = ${M}${F(5,10)} = <b>${M}${F(1,2)}</b> = ${M}0,5.`},
+     {q:`Berechne ${F(1,3)} ${M} ${F(5,6)}. (Antwort als Bruch oder Dezimalzahl)`, type:'num', answer:-0.5,
+      hint:`Hauptnenner 6: ${F(1,3)} = ${F(2,6)}. Du ziehst mehr ab, als da ist → negatives Ergebnis.`,
+      sol:`${F(2,6)} ${M} ${F(5,6)} = ${M}${F(3,6)} = <b>${M}${F(1,2)}</b> = ${M}0,5.`},
+     {q:`Berechne (${M}${F(5,6)}) ${M} (${M}${F(3,4)}). (Antwort als Bruch)`, type:'num', answer:-1/12,
+      hint:`Gegenzahl addieren: −5/6 + 3/4. Hauptnenner 12: −10/12 + 9/12.`,
+      sol:`${M}${F(10,12)} + ${F(9,12)} = <b>${M}${F(1,12)}</b>.`},
+    ],
+    [
+     {q:`Ergänze die Lücke: &nbsp; (${M}5) + ☐ = ${M}12`, type:'num', answer:-7,
+      hint:'Wie kommst du von −5 nach −12? Du musst 7 nach links gehen.',
+      sol:`(${M}5) + (<b>${M}7</b>) = ${M}12. Probe: ${M}5 ${M} 7 = ${M}12 ✓`},
+     {q:`Ergänze die Lücke: &nbsp; ☐ ${M} (${M}6) = 2`, type:'num', answer:-4,
+      hint:'☐ − (−6) ist dasselbe wie ☐ + 6. Welche Zahl plus 6 ergibt 2?',
+      sol:`<b>${M}4</b> + 6 = 2, also ${M}4 ${M} (${M}6) = 2 ✓`},
+     {q:`Ergänze die Lücke: &nbsp; 3 ${M} ☐ = 10`, type:'num', answer:-7,
+      hint:'Damit das Ergebnis größer wird als 3, musst du eine negative Zahl abziehen.',
+      sol:`3 ${M} (<b>${M}7</b>) = 3 + 7 = 10 ✓`},
+    ],
+   ]},
+ { name:'Multiplizieren', icon:'✖️', color:'#4895ef',
+   mat:['AB 05 Multiplizieren rationaler Zahlen','07a Kopfrechentest'],
+   can:['rationale Zahlen multiplizieren','die Vorzeichenregel anwenden','das Vorzeichen bei mehreren Faktoren bestimmen'],
+   tasks:[
+    [
+     {q:`Berechne (${M}7) · 8.`, type:'num', answer:-56,
+      hint:'Verschiedene Vorzeichen → das Ergebnis ist negativ.',
+      sol:`7 · 8 = 56, verschiedene Vorzeichen → <b>${M}56</b>.`},
+     {q:`Berechne 9 · (${M}4).`, type:'num', answer:-36,
+      hint:'Verschiedene Vorzeichen → das Ergebnis ist negativ.',
+      sol:`9 · 4 = 36, verschiedene Vorzeichen → <b>${M}36</b>.`},
+    ],
+    [
+     {q:`Berechne (${M}8) · (${M}5).`, type:'num', answer:40,
+      hint:'Gleiche Vorzeichen → das Ergebnis ist positiv.',
+      sol:`8 · 5 = 40, gleiche Vorzeichen → <b>40</b>.`},
+     {q:`Berechne (${M}9) · (${M}7).`, type:'num', answer:63,
+      hint:'Gleiche Vorzeichen → das Ergebnis ist positiv.',
+      sol:`9 · 7 = 63, gleiche Vorzeichen → <b>63</b>.`},
+    ],
+    [
+     {q:`Berechne (${M}3) · (${M}2) · (${M}4).`, type:'num', answer:-24,
+      hint:'Zähle die negativen Faktoren: gerade Anzahl → +, ungerade Anzahl → −.',
+      sol:`Beträge: 3 · 2 · 4 = 24. Es gibt 3 negative Faktoren (ungerade) → <b>${M}24</b>.`},
+     {q:`Berechne (${M}1) · (${M}2) · (${M}3) · (${M}4).`, type:'num', answer:24,
+      hint:'Zähle die negativen Faktoren: gerade Anzahl → +, ungerade Anzahl → −.',
+      sol:`Beträge: 1 · 2 · 3 · 4 = 24. Es gibt 4 negative Faktoren (gerade) → <b>24</b>.`},
+    ],
+    [
+     {q:`Berechne (${M}0,5) · 12.`, type:'num', answer:-6,
+      hint:'0,5 · 12 ist die Hälfte von 12. Dann das Vorzeichen bestimmen.',
+      sol:`0,5 · 12 = 6; verschiedene Vorzeichen → <b>${M}6</b>.`},
+     {q:`Berechne (${M}0,3) · (${M}0,4).`, type:'num', answer:0.12,
+      hint:'3 · 4 = 12. Zähle die Nachkommastellen: 1 + 1 = 2.',
+      sol:`0,3 · 0,4 = 0,12; gleiche Vorzeichen → <b>0,12</b>.`},
+    ],
+    [
+     {q:`Berechne (${M}${F(2,3)}) · ${F(9,4)}. (Antwort als Bruch oder Dezimalzahl)`, type:'num', answer:-1.5,
+      hint:'Zähler mal Zähler, Nenner mal Nenner – und vorher kürzen, wenn möglich.',
+      sol:`${F(2,3)} · ${F(9,4)} = ${F('2 · 9','3 · 4')} = ${F(18,12)} = ${F(3,2)}; verschiedene Vorzeichen → <b>${M}${F(3,2)}</b> = ${M}1,5.`},
+     {q:`Berechne (${M}${F(3,5)}) · (${M}${F(5,6)}). (Antwort als Bruch oder Dezimalzahl)`, type:'num', answer:0.5,
+      hint:'Erst kürzen: Die 5 und die 3 lassen sich über Kreuz kürzen.',
+      sol:`${F(3,5)} · ${F(5,6)} = ${F(15,30)} = ${F(1,2)}; gleiche Vorzeichen → <b>${F(1,2)}</b> = 0,5.`},
+    ],
+   ]},
+ { name:'Dividieren', icon:'➗', color:'#7b2cbf',
+   mat:['AB 06 Dividieren rationaler Zahlen','07a Kopfrechentest'],
+   can:['rationale Zahlen dividieren','die Vorzeichenregel bei der Division anwenden','durch Brüche dividieren (Kehrwert)'],
+   tasks:[
+    [
+     {q:`Berechne (${M}63) : 9.`, type:'num', answer:-7,
+      hint:'Für das Vorzeichen gilt dieselbe Regel wie beim Multiplizieren.',
+      sol:`63 : 9 = 7, verschiedene Vorzeichen → <b>${M}7</b>.`},
+     {q:`Berechne 48 : (${M}6).`, type:'num', answer:-8,
+      hint:'Verschiedene Vorzeichen → negatives Ergebnis.',
+      sol:`48 : 6 = 8, verschiedene Vorzeichen → <b>${M}8</b>.`},
+    ],
+    [
+     {q:`Berechne (${M}45) : (${M}9).`, type:'num', answer:5,
+      hint:'Gleiche Vorzeichen → positives Ergebnis.',
+      sol:`45 : 9 = 5, gleiche Vorzeichen → <b>5</b>.`},
+     {q:`Berechne (${M}96) : (${M}12).`, type:'num', answer:8,
+      hint:'Gleiche Vorzeichen → positives Ergebnis.',
+      sol:`96 : 12 = 8, gleiche Vorzeichen → <b>8</b>.`},
+    ],
+    [
+     {q:`Berechne 3,6 : (${M}0,4).`, type:'num', answer:-9,
+      hint:'Verschiebe bei beiden Zahlen das Komma um eine Stelle: 36 : 4.',
+      sol:`3,6 : 0,4 = 36 : 4 = 9; verschiedene Vorzeichen → <b>${M}9</b>.`},
+     {q:`Berechne (${M}2,4) : 0,8.`, type:'num', answer:-3,
+      hint:'Komma bei beiden Zahlen um eine Stelle verschieben: 24 : 8.',
+      sol:`24 : 8 = 3; verschiedene Vorzeichen → <b>${M}3</b>.`},
+     {q:`Berechne 0 : (${M}13).`, type:'num', answer:0,
+      hint:'0 geteilt durch eine Zahl (≠ 0) ergibt immer …',
+      sol:`0 : (${M}13) = <b>0</b>. (Aber Achtung: Durch 0 teilen geht nie!)`},
+    ],
+    [
+     {q:`Berechne (${M}${F(3,5)}) : ${F(3,10)}.`, type:'num', answer:-2,
+      hint:'Durch einen Bruch dividieren = mit dem Kehrwert multiplizieren.',
+      sol:`${M}${F(3,5)} · ${F(10,3)} = ${M}${F(30,15)} = <b>${M}2</b>.`},
+     {q:`Berechne ${F(3,4)} : (${M}${F(1,2)}). (Antwort als Bruch oder Dezimalzahl)`, type:'num', answer:-1.5,
+      hint:'Mit dem Kehrwert von 1/2 multiplizieren, also mit 2.',
+      sol:`${F(3,4)} · (${M}2) = ${M}${F(6,4)} = <b>${M}${F(3,2)}</b> = ${M}1,5.`},
+    ],
+    [
+     {q:`Welche Zahl musst du für x einsetzen? &nbsp; x · (${M}6) = 42`, type:'num', answer:-7,
+      hint:'Rechne rückwärts: x = 42 : (−6).',
+      sol:`x = 42 : (${M}6) = <b>${M}7</b>. Probe: (${M}7) · (${M}6) = 42 ✓`},
+     {q:`Ergänze die Lücke: &nbsp; ☐ : (${M}4) = 9`, type:'num', answer:-36,
+      hint:'Rechne rückwärts mit der Umkehraufgabe: ☐ = 9 · (−4).',
+      sol:`9 · (${M}4) = <b>${M}36</b>. Probe: (${M}36) : (${M}4) = 9 ✓`},
+    ],
+   ]},
+ { name:'Rechenregeln & -gesetze', icon:'🧠', color:'#d62828',
+   mat:['07b Übungsblatt Rechenregeln für rationale Zahlen'],
+   can:['Klammer vor Punkt vor Strich beachten','Klammern so setzen, dass ein bestimmtes Ergebnis herauskommt','Kommutativ-, Assoziativ- und Distributivgesetz erkennen, benennen und zum vorteilhaften Rechnen nutzen','Rechenfehler finden und erklären'],
+   tasks:[
+    [
+     {q:`Berechne 9 ${M} 4 · (${M}3).`, type:'num', answer:21,
+      hint:'Punkt- vor Strichrechnung: Zuerst 4 · (−3).',
+      sol:`4 · (${M}3) = ${M}12, dann 9 ${M} (${M}12) = 9 + 12 = <b>21</b>.`},
+     {q:`Berechne (${M}3) + 4 · (${M}2).`, type:'num', answer:-11,
+      hint:'Punkt- vor Strichrechnung: Zuerst 4 · (−2).',
+      sol:`4 · (${M}2) = ${M}8, dann (${M}3) + (${M}8) = <b>${M}11</b>.`},
+     {q:`Berechne (${M}20) : 4 + 8.`, type:'num', answer:3,
+      hint:'Punkt- vor Strichrechnung: Zuerst (−20) : 4.',
+      sol:`(${M}20) : 4 = ${M}5, dann ${M}5 + 8 = <b>3</b>.`},
+    ],
+    [
+     {q:`Berechne ${F(1,2)} ${M} ${F(3,4)} · (${M}${F(2,3)}).`, type:'num', answer:1,
+      hint:'Punkt vor Strich: Rechne zuerst 3/4 · (−2/3). Kürze vor dem Multiplizieren.',
+      sol:`${F(3,4)} · (${M}${F(2,3)}) = ${M}${F(6,12)} = ${M}${F(1,2)}. Dann ${F(1,2)} ${M} (${M}${F(1,2)}) = ${F(1,2)} + ${F(1,2)} = <b>1</b>.`},
+     {q:`Berechne (${M}${F(3,5)}) · ${F(5,9)} + ${F(1,3)}. (Antwort als Bruch oder Dezimalzahl)`, type:'num', answer:0,
+      hint:'Punkt vor Strich: Rechne zuerst (−3/5) · 5/9 und kürze.',
+      sol:`(${M}${F(3,5)}) · ${F(5,9)} = ${M}${F(15,45)} = ${M}${F(1,3)}. Dann ${M}${F(1,3)} + ${F(1,3)} = <b>0</b>.`},
+    ],
+    [
+     {q:`Berechne ${M}12 ${M} 3 · (2 ${M} 6).`, type:'num', answer:0,
+      hint:'Klammer zuerst: 2 − 6. Dann Punkt vor Strich.',
+      sol:`2 ${M} 6 = ${M}4; 3 · (${M}4) = ${M}12; ${M}12 ${M} (${M}12) = ${M}12 + 12 = <b>0</b>.`},
+     {q:`Berechne (${M}40) : (${M}5) ${M} 3 · (${M}2).`, type:'num', answer:14,
+      hint:'Erst beide Punktrechnungen, dann die Strichrechnung.',
+      sol:`(${M}40) : (${M}5) = 8 und 3 · (${M}2) = ${M}6. Dann 8 ${M} (${M}6) = 8 + 6 = <b>14</b>.`},
+     {q:`Berechne (${M}24) : [(${M}2) + (${M}4)].`, type:'num', answer:4,
+      hint:'Klammern zuerst!',
+      sol:`(${M}2) + (${M}4) = ${M}6, dann (${M}24) : (${M}6) = <b>4</b>.`},
+    ],
+    [
+     {q:`Setze Klammern so, dass das Ergebnis <b>11</b> ist: &nbsp; ${M}6 + 2 · (${M}3) ${M} 1`, type:'mc',
+      options:[`(${M}6 + 2) · (${M}3) ${M} 1`,`${M}6 + 2 · ((${M}3) ${M} 1)`,`(${M}6 + 2) · ((${M}3) ${M} 1)`,`${M}6 + (2 · (${M}3)) ${M} 1`], answer:`(${M}6 + 2) · (${M}3) ${M} 1`,
+      hint:'Probiere die Möglichkeiten der Reihe nach aus und rechne jede aus. Klammern um −6 + 2 ergeben −4.',
+      sol:`(${M}6 + 2) · (${M}3) ${M} 1 = (${M}4) · (${M}3) ${M} 1 = 12 ${M} 1 = <b>11</b>.`},
+     {q:`Setze Klammern so, dass das Ergebnis <b>${M}12</b> ist: &nbsp; ${M}3 + 7 · (${M}2) ${M} 1`, type:'mc',
+      options:[`(${M}3 + 7) · ((${M}2) ${M} 1)`,`(${M}3 + 7) · (${M}2) ${M} 1`,`${M}3 + 7 · ((${M}2) ${M} 1)`,`${M}3 + (7 · (${M}2)) ${M} 1`], answer:`(${M}3 + 7) · ((${M}2) ${M} 1)`,
+      hint:'−12 = 4 · (−3). Welche Klammern ergeben 4 und welche −3?',
+      sol:`(${M}3 + 7) · ((${M}2) ${M} 1) = 4 · (${M}3) = <b>${M}12</b>.`},
+    ],
+    [
+     {q:`Rechne vorteilhaft: &nbsp; 0,5 · (${M}43) · (${M}2)`, type:'num', answer:43,
+      hint:'Vertausche die Faktoren (Kommutativgesetz): 0,5 · (−2) ergibt eine glatte Zahl.',
+      sol:`0,5 · (${M}2) · (${M}43) = (${M}1) · (${M}43) = <b>43</b>.`},
+     {q:`Rechne vorteilhaft: &nbsp; (${M}25) · 17 · (${M}4)`, type:'num', answer:1700,
+      hint:'Vertausche die Faktoren (Kommutativgesetz) und rechne zuerst (−25) · (−4).',
+      sol:`(${M}25) · (${M}4) · 17 = 100 · 17 = <b>1700</b>.`},
+     {q:`Rechne vorteilhaft: &nbsp; 0,2 · (${M}19) · 5`, type:'num', answer:-19,
+      hint:'0,2 · 5 = 1. Vertausche die Faktoren.',
+      sol:`0,2 · 5 · (${M}19) = 1 · (${M}19) = <b>${M}19</b>.`},
+    ],
+    [
+     {q:`Rechne vorteilhaft mit dem Distributivgesetz: &nbsp; (${M}8) · 17 + (${M}8) · (${M}7)`, type:'num', answer:-80,
+      hint:'Klammere den gemeinsamen Faktor (−8) aus: (−8) · [17 + (−7)].',
+      sol:`(${M}8) · [17 + (${M}7)] = (${M}8) · 10 = <b>${M}80</b>.`},
+     {q:`Rechne vorteilhaft mit dem Distributivgesetz: &nbsp; 6 · (${M}23) + 6 · 3`, type:'num', answer:-120,
+      hint:'Klammere den gemeinsamen Faktor 6 aus: 6 · [(−23) + 3].',
+      sol:`6 · [(${M}23) + 3] = 6 · (${M}20) = <b>${M}120</b>.`},
+    ],
+    [
+     {q:`Welches Rechengesetz wurde angewendet? &nbsp; (${M}2) · (5 · 7) = ((${M}2) · 5) · 7`, type:'mc',
+      options:['Kommutativgesetz','Assoziativgesetz','Distributivgesetz','Punkt vor Strich'], answer:'Assoziativgesetz',
+      hint:'Die Reihenfolge der Zahlen bleibt gleich – nur die Klammern werden anders gesetzt.',
+      sol:'Klammern umsetzen (Verbindungsgesetz) ist das <b>Assoziativgesetz</b>.'},
+     {q:`Welches Rechengesetz wurde angewendet? &nbsp; (${M}4) · (10 + 3) = (${M}4) · 10 + (${M}4) · 3`, type:'mc',
+      options:['Kommutativgesetz','Assoziativgesetz','Distributivgesetz','Punkt vor Strich'], answer:'Distributivgesetz',
+      hint:'Ein Faktor wird auf beide Summanden in der Klammer „verteilt“.',
+      sol:'Ausmultiplizieren bzw. Ausklammern ist das <b>Distributivgesetz</b> (Verteilungsgesetz).'},
+     {q:`Welches Rechengesetz wurde angewendet? &nbsp; (${M}3) + 5 = 5 + (${M}3)`, type:'mc',
+      options:['Kommutativgesetz','Assoziativgesetz','Distributivgesetz','Punkt vor Strich'], answer:'Kommutativgesetz',
+      hint:'Hier wurden die beiden Summanden einfach vertauscht.',
+      sol:'Vertauschen von Summanden (oder Faktoren) ist das <b>Kommutativgesetz</b> (Vertauschungsgesetz).'},
+    ],
+    [
+     {q:`Ben rechnet: &nbsp; 3 + 2 · (${M}5) = 5 · (${M}5) = ${M}25. &nbsp; Was ist sein Fehler?`, type:'mc',
+      options:[`Er hat „Punkt vor Strich“ missachtet. Richtig: 3 + (${M}10) = ${M}7`,`Das Vorzeichen ist falsch. Richtig: 25`,`Er hat richtig gerechnet.`,`Er hätte 3 · 2 zuerst rechnen müssen: 6 · (${M}5) = ${M}30`],
+      answer:`Er hat „Punkt vor Strich“ missachtet. Richtig: 3 + (${M}10) = ${M}7`,
+      hint:'Welche Rechnung muss ohne Klammern zuerst ausgeführt werden?',
+      sol:`Ben hat zuerst addiert. Punktrechnung geht aber vor: 2 · (${M}5) = ${M}10, dann 3 + (${M}10) = <b>${M}7</b>.`},
+     {q:`Tim rechnet: &nbsp; ${M}4 ${M} (${M}6) = ${M}10. &nbsp; Was ist sein Fehler?`, type:'mc',
+      options:[`Er hat die Beträge addiert und das Minus behalten. Richtig: ${M}4 + 6 = 2`,`Er hätte multiplizieren müssen: 24`,`Er hat richtig gerechnet.`,`Richtig wäre ${M}2`],
+      answer:`Er hat die Beträge addiert und das Minus behalten. Richtig: ${M}4 + 6 = 2`,
+      hint:'Eine negative Zahl subtrahieren = die Gegenzahl addieren.',
+      sol:`${M}4 ${M} (${M}6) = ${M}4 + 6 = <b>2</b>. Wer eine negative Zahl abzieht, bekommt ein größeres Ergebnis.`},
+     {q:`Jonas soll lösen: „Es sind ${M}6 °C. Die Temperatur sinkt dreimal um je 4 °C.“ Er rechnet: ${M}6 ${M} 3 · (${M}4) = ${M}6 + 12 = 6 °C. Was ist sein Fehler?`, type:'mc',
+      options:[`Er subtrahiert die Änderung, statt sie zu addieren. Richtig: ${M}6 + 3 · (${M}4) = ${M}18 °C`,`Er hat Punkt vor Strich missachtet.`,`Er hat richtig gerechnet.`,`Richtig wäre ${M}6 ${M} 3 ${M} 4 = ${M}13 °C`],
+      answer:`Er subtrahiert die Änderung, statt sie zu addieren. Richtig: ${M}6 + 3 · (${M}4) = ${M}18 °C`,
+      hint:'„Sinkt um 4 °C“ ist schon die Änderung −4. Diese Änderung wird addiert: Zustand + Änderung.',
+      sol:`Die Änderung ist 3 · (${M}4) = ${M}12. Neuer Zustand: ${M}6 + (${M}12) = <b>${M}18 °C</b>.`},
+    ],
+   ]},
+ { name:'Sachaufgaben', icon:'🏔️', color:'#3a86ff',
+   mat:['AB 06 Dividieren (Aufgaben 4 und 5: Oimjakon)','AB 08 Anwendungsaufgaben (Lernbuffet)'],
+   can:['Durchschnittstemperaturen berechnen','Unterschiede (z. B. wärmster und kältester Tag) berechnen','fehlende Werte bei einem Durchschnitt berechnen','Sachaufgaben mit Term, Rechnung und Antwortsatz lösen'],
+   tasks:[
+    [
+     {q:`In Kiruna (Schweden) wurden mittags gemessen:<br>${M}12 °C, ${M}8 °C, ${M}15 °C, ${M}3 °C, 2 °C, ${M}6 °C, ${M}7 °C.<br>Berechne die Durchschnittstemperatur (in °C).`, type:'num', answer:-7,
+      hint:'Durchschnitt = Summe aller Werte : Anzahl der Werte. Addiere zuerst alle 7 Temperaturen.',
+      sol:`Summe: ${M}12 ${M} 8 ${M} 15 ${M} 3 + 2 ${M} 6 ${M} 7 = ${M}49. Durchschnitt: ${M}49 : 7 = <b>${M}7</b>.<br><i>Antwort: Die Durchschnittstemperatur beträgt ${M}7 °C.</i>`},
+     {q:`In Tromsø wurden an einem Tag gemessen:<br>${M}5 °C, ${M}9 °C, ${M}2 °C, ${M}8 °C, ${M}6 °C, ${M}4 °C, ${M}8 °C.<br>Berechne die Durchschnittstemperatur (in °C).`, type:'num', answer:-6,
+      hint:'Durchschnitt = Summe : Anzahl. Hier: Summe der 7 Werte, dann : 7.',
+      sol:`Summe: ${M}5 ${M} 9 ${M} 2 ${M} 8 ${M} 6 ${M} 4 ${M} 8 = ${M}42. Durchschnitt: ${M}42 : 7 = <b>${M}6</b>.<br><i>Antwort: Die Durchschnittstemperatur beträgt ${M}6 °C.</i>`},
+    ],
+    [
+     {q:`Temperaturen einer Woche: ${M}12 °C, ${M}8 °C, ${M}15 °C, ${M}3 °C, 2 °C, ${M}6 °C, ${M}7 °C.<br>Wie groß ist der Unterschied zwischen dem wärmsten und dem kältesten Tag (in °C)?`, type:'num', answer:17,
+      hint:'Wärmster Tag: 2 °C, kältester Tag: −15 °C. Unterschied = wärmster − kältester.',
+      sol:`2 ${M} (${M}15) = 2 + 15 = <b>17</b>.<br><i>Antwort: Der Unterschied beträgt 17 °C.</i>`},
+     {q:`Die Zugspitze ist 2962 m hoch, das Ufer des Toten Meeres liegt bei etwa ${M}430 m. Berechne den Höhenunterschied (in m).`, type:'num', answer:3392,
+      hint:'Höhenunterschied = höherer Wert − tieferer Wert = 2962 − (−430).',
+      sol:`2962 ${M} (${M}430) = 2962 + 430 = <b>3392</b>.<br><i>Antwort: Der Höhenunterschied beträgt 3392 m.</i>`},
+     {q:`Morgens sind es ${M}7 °C, mittags 5 °C. Berechne den Temperaturunterschied (in °C).`, type:'num', answer:12,
+      hint:'Unterschied = größerer Wert − kleinerer Wert = 5 − (−7).',
+      sol:`5 ${M} (${M}7) = 5 + 7 = <b>12</b>.<br><i>Antwort: Der Unterschied beträgt 12 °C.</i>`},
+    ],
+    [
+     {q:`An 4 Tagen soll die Durchschnittstemperatur ${M}3 °C betragen. An drei Tagen wurden ${M}5 °C, ${M}1 °C und ${M}4 °C gemessen. Welche Temperatur muss am 4. Tag gemessen werden (in °C)?`, type:'num', answer:-2,
+      hint:'Gesamtsumme = 4 · (−3) = −12. Ziehe davon die Summe der drei bekannten Tage ab.',
+      sol:`Gesamtsumme: 4 · (${M}3) = ${M}12. Bekannt: ${M}5 ${M} 1 ${M} 4 = ${M}10. 4. Tag: ${M}12 ${M} (${M}10) = <b>${M}2</b>.<br><i>Antwort: Am 4. Tag müssen ${M}2 °C gemessen werden.</i>`},
+    ],
+    [
+     {q:`In einem Kühlhaus herrschen ${M}20 °C. Nach einem Stromausfall steigt die Temperatur pro Stunde um 3 °C. Ab 4 °C verderben die Lebensmittel. Nach wie vielen Stunden ist das der Fall?`, type:'num', answer:8,
+      hint:'Wie viele Grad muss die Temperatur insgesamt steigen? 4 − (−20). Teile dann durch 3.',
+      sol:`4 ${M} (${M}20) = 24 Grad. 24 : 3 = <b>8</b>.<br><i>Antwort: Nach 8 Stunden verderben die Lebensmittel.</i>`},
+     {q:`Ein Taucher sinkt von der Wasseroberfläche pro Minute um 1,5 m. In welcher Höhe (in m) befindet er sich nach 8 Minuten?`, type:'num', answer:-12,
+      hint:'Sinken ist eine negative Änderung: 8 · (−1,5).',
+      sol:`8 · (${M}1,5) = <b>${M}12</b>.<br><i>Antwort: Nach 8 Minuten ist er in 12 m Tiefe (${M}12 m).</i>`},
+     {q:`Frau Kaya steigt im Hochhaus auf Etage ${M}3 in den Fahrstuhl, fährt 8 Etagen hoch und danach 6 Etagen runter. Auf welcher Etage ist sie?`, type:'num', answer:-1,
+      hint:'Zustand + Änderung + Änderung: (−3) + 8 + (−6).',
+      sol:`(${M}3) + 8 + (${M}6) = <b>${M}1</b>.<br><i>Antwort: Sie ist auf Etage ${M}1.</i>`},
+    ],
+    [
+     {q:`„Es sind ${M}5 °C. Die Temperatur sinkt viermal um je 2 °C.“ Welcher Term passt?`, type:'mc',
+      options:[`${M}5 + 4 · (${M}2)`,`${M}5 ${M} 4 · (${M}2)`,`(${M}5 + 4) · (${M}2)`,`${M}5 · 4 ${M} 2`], answer:`${M}5 + 4 · (${M}2)`,
+      hint:'Zustand + Änderung. Die Änderung ist viermal −2, also 4 · (−2).',
+      sol:`${M}5 + 4 · (${M}2) = ${M}5 + (${M}8) = <b>${M}13</b> °C.`},
+     {q:`In der Klassenkasse sind 48 €. 28 Kinder zahlen je 4,50 € ein. Der Bus kostet 160 €. Wie viel Geld ist danach in der Kasse (in €)?`, type:'num', answer:14,
+      hint:'Term: 48 + 28 · 4,50 − 160. Punkt vor Strich!',
+      sol:`28 · 4,50 = 126. 48 + 126 ${M} 160 = <b>14</b>.<br><i>Antwort: Danach sind noch 14 € in der Kasse.</i>`},
+    ],
+   ]},
+ { name:'Generalprobe', icon:'🏆', color:'#ffb703', final:true,
+   mat:['Alle Arbeitsblätter dieser Einheit'],
+   can:['alle Themen gemischt – wie in einer Klassenarbeit','Tipp: Schreibe die Rechenwege im Heft mit und notiere bei Sachaufgaben einen Antwortsatz!'],
+   tasks:[] },
+];
+const N_ST = STATIONS.length;          // inkl. Generalprobe
+const N_MAP = STATIONS.filter(s=>!s.final).length;
+
+function pickTasks(i){
+  const pick = slot => Array.isArray(slot) ? slot[Math.floor(Math.random()*slot.length)] : slot;
+  const st = STATIONS[i];
+  if(st.final){
+    // aus jeder Station eine zufällige Aufgabe
+    return STATIONS.filter(s=>!s.final).map(s=>{
+      const t = pick(s.tasks[Math.floor(Math.random()*s.tasks.length)]);
+      return {...t, from:s.name};
+    });
+  }
+  return st.tasks.map(pick);
+}
+function taskCount(i){ return STATIONS[i].final ? N_MAP : STATIONS[i].tasks.length; }
+
+/* ---------- Spickzettel ---------- */
+const CHEAT = [
+ `<h3>📏 Zahlengerade</h3>
+  <p>Rationale Zahlen (ℚ): alle positiven und negativen Brüche/Dezimalzahlen und die 0.</p>
+  <ul><li>Negative Zahlen liegen <b>links</b> von 0.</li>
+  <li>Je weiter <b>rechts</b>, desto <b>größer</b>: <span class="ex">${M}4 &lt; ${M}1 &lt; 2</span></li>
+  <li>Bei negativen Zahlen: <b>größerer Betrag → kleinere Zahl</b>: <span class="ex">${M}3 &lt; ${M}0,5</span></li>
+  <li>„Von 2 genau 5 entfernt“: <b>beide Richtungen</b> prüfen → <span class="ex">${M}3 und 7</span></li></ul>
+  ${figLine({min:-4,max:4,marks:[{x:-2.5,label:M+'2,5'},{x:1.5,label:'1,5'}]})}`,
+ `<h3>🧭 Koordinatensystem</h3>
+  <ul><li><b>P(x|y)</b>: erst x (rechts +/links −), dann y (oben +/unten −).</li>
+  <li>Quadranten gegen den Uhrzeigersinn: <b>I</b>(+|+), <b>II</b>(−|+), <b>III</b>(−|−), <b>IV</b>(+|−)</li>
+  <li><b>Verschieben</b> nach oben/unten → nur <b>y</b> ändert sich; nach rechts/links → nur <b>x</b>.<br><span class="ex">A(2|${M}1), 3 nach unten → A'(2|${M}4)</span></li>
+  <li>Rechteck: Gegenüberliegende Ecken haben gleiche x- bzw. y-Koordinaten.</li>
+  <li>Spiegeln an der <b>x-Achse</b>: Vorzeichen von <b>y</b> wechselt.</li></ul>`,
+ `<h3>🎯 Betrag &amp; Gegenzahl</h3>
+  <ul><li>Der <b>Betrag</b> ist der <b>Abstand zur 0</b> – nie negativ.</li>
+  <li><span class="ex">|${M}5| = 5</span> &nbsp; <span class="ex">|5| = 5</span> &nbsp; <span class="ex">|0| = 0</span></li>
+  <li>Die <b>Gegenzahl</b> hat den gleichen Abstand zur 0, liegt aber auf der anderen Seite: <span class="ex">3 ↔ ${M}3</span></li>
+  <li>Zahl und Gegenzahl haben denselben Betrag.</li>
+  <li>Bei |…| zuerst innen rechnen: <span class="ex">|2 ${M} 9| = |${M}7| = 7</span></li></ul>`,
+ `<h3>🌡️ Zustand und Änderung</h3>
+  <ul><li><b>neuer Zustand = alter Zustand + Änderung</b></li>
+  <li><b>Änderung = neuer Zustand − alter Zustand</b></li>
+  <li>Zunahme (steigen, einzahlen, hoch) → <b>+</b>; Abnahme (fallen, abbuchen, runter) → <b>−</b></li>
+  <li><span class="ex">${M}3 °C, steigt um 5 °C → ${M}3 + 5 = 2 °C</span></li></ul>`,
+ `<h3>➕ Addieren &amp; Subtrahieren</h3>
+  <ul><li><b>Gleiche Vorzeichen:</b> Beträge addieren, Vorzeichen behalten: <span class="ex">(${M}3)+(${M}4) = ${M}7</span></li>
+  <li><b>Verschiedene Vorzeichen:</b> größeren minus kleineren Betrag, Vorzeichen der Zahl mit größerem Betrag: <span class="ex">(${M}8)+3 = ${M}5</span></li>
+  <li><b>Subtrahieren = Gegenzahl addieren:</b><br><span class="ex">5 ${M} 7 = 5 + (${M}7) = ${M}2</span> &nbsp; <span class="ex">4 ${M} (${M}6) = 4 + 6 = 10</span></li>
+  <li>Plättchen-Modell: ● = +1, ○ = −1, ●○ = 0 (Null-Paar). Fehlen Plättchen zum Wegnehmen, lege Null-Paare dazu.</li>
+  <li>Lücke? Mit der Umkehraufgabe: <span class="ex">(${M}3) + ☐ = ${M}10 → ☐ = ${M}10 ${M} (${M}3) = ${M}7</span></li></ul>`,
+ `<h3>✖️ Multiplizieren</h3>
+  <ul><li>Beträge multiplizieren, dann Vorzeichen:</li>
+  <li><b>gleiche</b> Vorzeichen → <b>+</b> &nbsp; <span class="ex">(${M}3)·(${M}4) = 12</span></li>
+  <li><b>verschiedene</b> Vorzeichen → <b>−</b> &nbsp; <span class="ex">(${M}3)·4 = ${M}12</span></li>
+  <li>Viele Faktoren: Anzahl negativer Faktoren <b>gerade → +</b>, <b>ungerade → −</b></li></ul>`,
+ `<h3>➗ Dividieren</h3>
+  <ul><li>Gleiche Vorzeichenregel wie beim Multiplizieren:<br><span class="ex">(${M}20):(${M}5) = 4</span> &nbsp; <span class="ex">18:(${M}3) = ${M}6</span></li>
+  <li>Kommazahlen: Komma bei <b>beiden</b> Zahlen gleich weit verschieben: <span class="ex">4,8 : 0,6 = 48 : 6</span></li>
+  <li>Durch einen Bruch dividieren = mit dem <b>Kehrwert</b> multiplizieren: ${F(1,2)} : ${F(3,4)} = ${F(1,2)} · ${F(4,3)} = ${F(2,3)}</li>
+  <li>Durch <b>0</b> darf man <b>nie</b> dividieren!</li></ul>`,
+ `<h3>🧠 Rechenregeln &amp; Rechengesetze</h3>
+  <ul><li>Reihenfolge: <b>Klammern → Punkt (·, :) → Strich (+, −)</b>, sonst von links nach rechts.</li>
+  <li>Typischer Fehler: <span class="ex">4 + 2 · (${M}3) ≠ 6 · (${M}3)</span> – richtig: 4 + (${M}6) = ${M}2</li>
+  <li><b>Kommutativgesetz</b> (vertauschen): a + b = b + a; a · b = b · a</li>
+  <li><b>Assoziativgesetz</b> (Klammern umsetzen): (a · b) · c = a · (b · c)</li>
+  <li><b>Distributivgesetz</b> (ausklammern): a · b + a · c = a · (b + c)<br><span class="ex">(${M}5)·13 + (${M}5)·(${M}3) = (${M}5)·10 = ${M}50</span></li>
+  <li>Klammern setzen: Möglichkeiten ausprobieren und jeweils ausrechnen.</li>
+  <li>Achtung: Für − und : gelten Kommutativ- und Assoziativgesetz <b>nicht</b>!</li></ul>`,
+ `<h3>🏔️ Sachaufgaben</h3>
+  <ul><li><b>Durchschnitt</b> = Summe aller Werte : Anzahl<br><span class="ex">${M}4, ${M}2, 0 → (${M}6) : 3 = ${M}2</span></li>
+  <li><b>Unterschied</b> = größerer Wert − kleinerer Wert<br><span class="ex">3 °C und ${M}8 °C → 3 ${M} (${M}8) = 11 °C</span></li>
+  <li><b>Fehlender Wert</b> beim Durchschnitt: neue Summe = Anzahl · neuer Durchschnitt; fehlender Wert = neue Summe − alte Summe.</li>
+  <li>Immer: <b>Term → Rechnung → Antwortsatz</b> (mit Einheit!)</li></ul>`,
+];
+
+/* ---------- Speicher ---------- */
+const KEY='lernlandkarte-rationale-zahlen-v1';
+let progress = Array(N_ST).fill(0);
+try{ const p=JSON.parse(localStorage.getItem(KEY)); if(Array.isArray(p)) p.slice(0,N_ST).forEach((v,k)=>progress[k]=+v||0); }catch(e){}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(progress)); }catch(e){} }
+const CKEY='lernlandkarte-rationale-zahlen-checkliste';
+let selfCheck={};
+try{ selfCheck=JSON.parse(localStorage.getItem(CKEY))||{}; }catch(e){}
+function saveCheck(){ try{ localStorage.setItem(CKEY, JSON.stringify(selfCheck)); }catch(e){} }
+
+/* ---------- Karte zeichnen ---------- */
+const PTS=[[125,470],[305,515],[490,470],[345,340],[470,212],[660,258],[700,470],[875,405],[850,215]];
+const GOAL=[945,78];
+function catmull(pts){
+  let d=`M${pts[0][0]},${pts[0][1]}`;
+  for(let i=0;i<pts.length-1;i++){
+    const p0=pts[i-1]||pts[i],p1=pts[i],p2=pts[i+1],p3=pts[i+2]||p2;
+    const c1=[p1[0]+(p2[0]-p0[0])/6,p1[1]+(p2[1]-p0[1])/6];
+    const c2=[p2[0]-(p3[0]-p1[0])/6,p2[1]-(p3[1]-p1[1])/6];
+    d+=` C${c1[0]},${c1[1]} ${c2[0]},${c2[1]} ${p2[0]},${p2[1]}`;
+  }
+  return d;
+}
+function tree(x,y,s=1){return `<g transform="translate(${x},${y}) scale(${s})"><rect x="-4" y="0" width="8" height="16" fill="#8d6e4a"/><circle cx="0" cy="-8" r="16" fill="#52b788"/><circle cx="-8" cy="-2" r="10" fill="#40916c"/></g>`}
+function drawMap(){
+  const svg=document.getElementById('mapSvg');
+  const allMapDone=progress.slice(0,N_MAP).every(x=>x>0);
+  let s=`<defs>
+    <pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.3" fill="#e7dcbd"/></pattern>
+    <filter id="sh" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="4" stdDeviation="3" flood-opacity=".25"/></filter>
+  </defs>
+  <rect width="1000" height="620" fill="#fdf6e3"/><rect width="1000" height="620" fill="url(#dots)"/>
+  <path d="M0,0 H1000 V620 H0Z" fill="none" stroke="#d9c89c" stroke-width="10"/>
+  <ellipse cx="160" cy="300" rx="110" ry="60" fill="#a8dadc" opacity=".8"/><ellipse cx="150" cy="295" rx="70" ry="30" fill="#c8eef0"/>
+  <polygon points="620,120 680,30 740,120" fill="#b7b7a4"/><polygon points="662,57 680,30 698,57" fill="#fff"/>
+  <polygon points="700,120 760,50 820,120" fill="#a5a58d"/><polygon points="745,68 760,50 775,68" fill="#fff"/>
+  <path d="M700,600 Q820,540 1000,580 V620 H700Z" fill="#a8dadc" opacity=".7"/>
+  ${tree(60,430)}${tree(240,420,.8)}${tree(600,560,.9)}${tree(560,320,.8)}${tree(190,170,.9)}${tree(320,90,.8)}${tree(950,330,.9)}${tree(640,400,.7)}${tree(420,600,.7)}
+  <text x="160" y="370" font-size="14" text-anchor="middle" fill="#457b9d" font-style="italic" font-weight="700">Bruchsee</text>
+  <text x="720" y="140" font-size="14" text-anchor="middle" fill="#6b705c" font-style="italic" font-weight="700">Minusberge</text>
+  <text x="40" y="605" font-size="22">🧭</text>
+  <path d="${catmull([...PTS,GOAL])}" fill="none" stroke="#c9a66b" stroke-width="22" stroke-linecap="round"/>
+  <path d="${catmull([...PTS,GOAL])}" fill="none" stroke="#fff" stroke-width="4" stroke-dasharray="2 14" stroke-linecap="round"/>
+  <g class="station" tabindex="0" role="button" aria-label="Generalprobe" data-i="${N_ST-1}">
+    <g class="node" filter="url(#sh)">
+      <circle cx="${GOAL[0]}" cy="${GOAL[1]}" r="38" fill="${progress[N_ST-1]>0?'#ffd166':(allMapDone?'#ffe8a3':'#eee')}" stroke="#fff" stroke-width="5"/>
+      <text x="${GOAL[0]}" y="${GOAL[1]+13}" font-size="36" text-anchor="middle">🏆</text>
+    </g>
+    <rect x="${GOAL[0]-56}" y="${GOAL[1]+44}" width="104" height="24" rx="12" fill="#fff" stroke="#ffb703" stroke-width="2.5"/>
+    <text x="${GOAL[0]-4}" y="${GOAL[1]+61}" font-size="13" font-weight="900" text-anchor="middle" fill="#22263a">Generalprobe</text>
+    <text x="${GOAL[0]-4}" y="${GOAL[1]+88}" font-size="17" text-anchor="middle" fill="#f4a100">${[0,1,2].map(k=>k<progress[N_ST-1]?'★':'☆').join('')}</text>
+  </g>
+  <text x="14" y="476" font-size="15" font-weight="900" fill="#22263a">Start ▶</text>`;
+  STATIONS.forEach((st,i)=>{
+    if(st.final) return;
+    const [x,y]=PTS[i], stars=progress[i];
+    const starStr=[0,1,2].map(k=>k<stars?'★':'☆').join('');
+    const lw=Math.max(110, st.name.length*8.6+20);
+    s+=`<g class="station" tabindex="0" role="button" aria-label="Station ${i+1}: ${st.name}" data-i="${i}">
+      <g class="node" filter="url(#sh)">
+        <circle cx="${x}" cy="${y}" r="38" fill="${st.color}" stroke="#fff" stroke-width="6"/>
+        <text x="${x}" y="${y+12}" font-size="32" text-anchor="middle">${st.icon}</text>
+        <circle cx="${x+28}" cy="${y-28}" r="14" fill="#22263a" stroke="#fff" stroke-width="3"/>
+        <text x="${x+28}" y="${y-23}" font-size="14" font-weight="900" text-anchor="middle" fill="#fff">${i+1}</text>
+        ${stars>0?`<circle cx="${x-28}" cy="${y-28}" r="13" fill="#2a9d8f" stroke="#fff" stroke-width="3"/><text x="${x-28}" y="${y-23}" font-size="14" font-weight="900" text-anchor="middle" fill="#fff">✓</text>`:''}
+      </g>
+      <rect x="${x-lw/2}" y="${y+46}" width="${lw}" height="26" rx="13" fill="#fff" stroke="${st.color}" stroke-width="2.5"/>
+      <text x="${x}" y="${y+64}" font-size="14" font-weight="800" text-anchor="middle" fill="#22263a">${st.name}</text>
+      <text x="${x}" y="${y+92}" font-size="18" text-anchor="middle" fill="#f4a100">${starStr}</text>
+    </g>`;
+  });
+  svg.innerHTML=s;
+  svg.querySelectorAll('.station').forEach(g=>{
+    const i=+g.dataset.i;
+    g.addEventListener('click',()=>openStation(i));
+    g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openStation(i);}});
+  });
+  const done=progress.filter(x=>x>0).length, stars=progress.reduce((a,b)=>a+b,0);
+  document.getElementById('progTxt').textContent=`${done} / ${N_ST} Stationen`;
+  document.getElementById('starTxt').textContent=`⭐ ${stars} / ${N_ST*3}`;
+  document.getElementById('progBar').style.width=(done/N_ST*100)+'%';
+}
+
+/* ---------- Stationskarte ---------- */
+let chosen=0;
+function openStation(i){
+  chosen=i; const st=STATIONS[i];
+  document.getElementById('scTitle').innerHTML=`<span class="badge" style="background:${st.color}">${st.icon}</span>${st.final?'':'Station '+(i+1)+': '}${st.name}`;
+  document.getElementById('scCan').innerHTML=st.can.map(c=>`<li>${c}</li>`).join('');
+  document.getElementById('scMat').innerHTML=`<b>📄 Wiederholen mit:</b><ul>${st.mat.map(m=>`<li>${m}</li>`).join('')}</ul>`;
+  let info=progress[i]>0?`Bisher erreicht: <b style="color:#f4a100;font-size:1.2em">${'★'.repeat(progress[i])}${'☆'.repeat(3-progress[i])}</b>`:`${taskCount(i)} Aufgaben warten auf dich.`;
+  if(st.final && !progress.slice(0,N_MAP).every(x=>x>0)) info+=`<br><small>Tipp: Am meisten bringt die Generalprobe, wenn du vorher alle Stationen geschafft hast. Du darfst aber jederzeit starten.</small>`;
+  document.getElementById('scStars').innerHTML=info;
+  document.getElementById('scCheat').style.display=st.final?'none':'';
+  show('stationCard');
+}
+function show(id){document.getElementById(id).hidden=false}
+function hide(id){document.getElementById(id).hidden=true}
+document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>{hide(b.dataset.close); if(b.dataset.close==='cheat') resumeFromCheat();}));
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o){hide(o.id); if(o.id==='cheat') resumeFromCheat();}}));
+
+function buildCheat(){
+  document.getElementById('csGrid').innerHTML=CHEAT.map((c,i)=>`<div class="cs" id="cs-${i}" style="--c:${STATIONS[i].color}">${c}</div>`).join('');
+}
+let cheatPaused=false;
+function openCheat(i){
+  if(G && G.phase==='run'){G.paused=true; cheatPaused=true;}
+  show('cheat');
+  if(i!=null){
+    const el=document.getElementById('cs-'+i);
+    if(el) setTimeout(()=>{el.scrollIntoView({behavior:'smooth',block:'center'}); el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');},50);
+  }
+}
+function resumeFromCheat(){ if(cheatPaused && G){ G.paused=false; G.last=performance.now(); } cheatPaused=false; }
+/* Spickzettel-Karte zur aktuellen Aufgabe (in der Generalprobe: Station, aus der die Aufgabe stammt) */
+function cheatIndex(){
+  if(!G) return null;
+  if(!STATIONS[G.st].final) return G.st;
+  const t=G.tasks[Math.min(G.q,G.tasks.length-1)];
+  const k=STATIONS.findIndex(s=>s.name===(t&&t.from));
+  return k>=0?k:null;
+}
+function printOverlay(id){
+  const el=document.getElementById(id); el.classList.add('printme');
+  const done=()=>{el.classList.remove('printme'); window.removeEventListener('afterprint',done);};
+  window.addEventListener('afterprint',done);
+  window.print(); setTimeout(done,1500);
+}
+
+/* ---------- Checkliste (Selbsteinschätzung) ---------- */
+const FACES=[['g','😀','kann ich sicher'],['m','🙂','kann ich meistens'],['b','😟','muss ich noch üben']];
+function buildCheck(){
+  document.getElementById('ckList').innerHTML=STATIONS.filter(st=>!st.final).map((st,i)=>`
+    <div class="ck-st" style="--c:${st.color}">
+      <h3><span>${st.icon} Station ${i+1}: ${st.name}</span><small>${progress[i]>0?'★'.repeat(progress[i])+'☆'.repeat(3-progress[i]):'noch nicht gespielt'}</small></h3>
+      ${st.can.map((c,k)=>{const id=i+'-'+k;return `<div class="ck-row"><span>Ich kann ${c}.</span><span class="ck-btns">${FACES.map(f=>`<button data-ck="${id}" data-v="${f[0]}" title="${f[2]}" aria-label="${f[2]}" class="${selfCheck[id]===f[0]?'on':''}">${f[1]}</button>`).join('')}</span></div>`;}).join('')}
+      <div style="font-size:.85rem;opacity:.8;margin-top:.3rem">📄 ${st.mat.join(' · ')}</div>
+    </div>`).join('');
+  document.querySelectorAll('#ckList [data-ck]').forEach(b=>b.onclick=()=>{
+    const id=b.dataset.ck; selfCheck[id]= selfCheck[id]===b.dataset.v ? undefined : b.dataset.v; saveCheck(); buildCheck();
+  });
+}
+document.getElementById('openCheck').onclick=()=>{buildCheck();show('check');};
+document.getElementById('openCheat').onclick=()=>openCheat();
+document.getElementById('scCheat').onclick=()=>{hide('stationCard');openCheat(chosen);};
+document.getElementById('scGo').onclick=()=>{hide('stationCard');startStation(chosen);};
+document.getElementById('resetBtn').onclick=()=>{ if(confirm('Gesamten Fortschritt (alle Sterne) löschen?')){progress=Array(N_ST).fill(0);selfCheck={};save();saveCheck();drawMap();} };
+
+/* ================== SPIEL ================== */
+const W=900,H=300,GY=252,PX=120;
+const cv=document.getElementById('cv'), ctx=cv.getContext('2d');
+function setupCanvas(){
+  const dpr=Math.min(window.devicePixelRatio||1,2);
+  cv.width=W*dpr; cv.height=H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+setupCanvas();
+let G=null, raf=null;
+const input={duck:false};
+
+function startStation(i){
+  document.getElementById('mapScreen').hidden=true;
+  document.getElementById('game').hidden=false;
+  const st=STATIONS[i];
+  G={st:i, tasks:pickTasks(i), q:0, phase:'ready', paused:false, hearts:3, invuln:0, dist:0,
+     speed:parseFloat(document.getElementById('tempo').value), obstacles:[], item:null, nextItem:'gate',
+     toSpawn:2, gap:420, player:{y:GY,vy:0,ground:true,duck:false}, jumpBuf:0, last:performance.now(),
+     penalty:0, wrong:0, hints:0, sols:0, shake:0, particles:[]};
+  G.base=G.speed;
+  document.getElementById('gTitle').innerHTML=`${st.icon} Station ${i+1}: ${st.name}`;
+  document.getElementById('psTitle').innerHTML=`${st.icon} ${st.name}`;
+  ['pQuestion','pOver','pDone'].forEach(hide); show('pStart');
+  updateHud();
+  if(!raf) raf=requestAnimationFrame(loop);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function toMap(){
+  G=null; if(raf){cancelAnimationFrame(raf); raf=null;}
+  document.getElementById('game').hidden=true;
+  document.getElementById('mapScreen').hidden=false;
+  drawMap();
+}
+function updateHud(){
+  if(!G) return;
+  document.getElementById('gHearts').textContent='❤️'.repeat(G.hearts)+'🤍'.repeat(3-G.hearts);
+  document.getElementById('gDots').innerHTML=G.tasks.map((_,k)=>`<span class="${k<G.q?'done':(k===G.q?'now':'')}"></span>`).join('');
+}
+function begin(){ if(G && G.phase==='ready'){ hide('pStart'); G.phase='run'; G.last=performance.now(); } }
+
+function pressJump(){
+  if(!G) return;
+  if(G.phase==='ready'){begin();return;}
+  if(G.phase!=='run'||G.paused) return;
+  G.jumpBuf=10;
+}
+function rand(a,b){return a+Math.random()*(b-a)}
+
+function spawnObstacle(){
+  const high=Math.random()<0.45;
+  const labels=['−3','−½','−7','0,5','−1,2','+4','−¾','−9'];
+  G.obstacles.push(high?{type:'high',x:W+30,w:54,label:''}:{type:'low',x:W+30,w:36,label:labels[Math.floor(Math.random()*labels.length)]});
+}
+
+function step(dt){
+  const f=dt/16.667, p=G.player;
+  // Spieler
+  if(G.jumpBuf>0){ if(p.ground){p.vy=-13.4; p.ground=false; G.jumpBuf=0;} else G.jumpBuf-=f; }
+  if(!p.ground){ p.vy+=0.64*f + (input.duck?1.1*f:0); p.y+=p.vy*f; if(p.y>=GY){p.y=GY;p.vy=0;p.ground=true;} }
+  p.duck = input.duck && p.ground;
+  G.dist+=G.speed*f;
+  if(G.invuln>0) G.invuln-=f;
+  // Bewegung
+  G.obstacles.forEach(o=>o.x-=G.speed*f);
+  if(G.item) G.item.x-=G.speed*f;
+  G.obstacles=G.obstacles.filter(o=>o.x>-100);
+  // Spawnen
+  G.gap-=G.speed*f;
+  if(G.gap<=0){
+    if(G.toSpawn>0){ spawnObstacle(); G.toSpawn--; G.gap=G.speed*rand(58,92); }
+    else if(!G.item){ G.item={type:G.nextItem,x:W+40}; G.gap=Infinity; }
+  }
+  // Kollision
+  const top=p.duck? p.y-36 : p.y-70, bot=p.y, l=PX-12, r=PX+12;
+  for(const o of G.obstacles){
+    if(o.hit) continue;
+    let ot,ob; const ol=o.x+5, or=o.x+o.w-5;
+    if(o.type==='low'){ot=GY-38; ob=GY;} else {ot=0; ob=GY-46;}
+    if(r>ol && l<or && bot>ot+3 && top<ob){
+      if(G.invuln<=0){
+        o.hit=true; G.hearts--; G.invuln=80; G.shake=12; updateHud();
+        for(let k=0;k<12;k++) G.particles.push({x:PX,y:p.y-40,vx:rand(-4,4),vy:rand(-6,1),life:40});
+        if(G.hearts<=0){ G.phase='over'; show('pOver'); return; }
+      }
+    }
+  }
+  // Tor / Ziel
+  if(G.item && G.item.x<=PX+18){
+    if(G.item.type==='gate'){ G.phase='question'; openQuestion(); }
+    else { G.phase='done'; finishStation(); }
+  }
+  G.particles.forEach(q=>{q.x+=q.vx*f;q.y+=q.vy*f;q.vy+=0.3*f;q.life-=f});
+  G.particles=G.particles.filter(q=>q.life>0);
+  if(G.shake>0) G.shake-=f;
+}
+
+/* ---------- Zeichnen ---------- */
+function shade(hex,amt){
+  const n=parseInt(hex.slice(1),16); let r=(n>>16)+amt,g=((n>>8)&255)+amt,b=(n&255)+amt;
+  r=Math.max(0,Math.min(255,r));g=Math.max(0,Math.min(255,g));b=Math.max(0,Math.min(255,b));
+  return `rgb(${r},${g},${b})`;
+}
+function draw(t){
+  const col=STATIONS[G.st].color;
+  ctx.save();
+  if(G.shake>0) ctx.translate(rand(-3,3),rand(-3,3));
+  // Himmel
+  const sky=ctx.createLinearGradient(0,0,0,H); sky.addColorStop(0,'#8ecae6'); sky.addColorStop(1,'#dff3fb');
+  ctx.fillStyle=sky; ctx.fillRect(-10,-10,W+20,H+20);
+  ctx.fillStyle='#ffd166'; ctx.beginPath(); ctx.arc(800,60,30,0,7); ctx.fill();
+  // Wolken
+  ctx.fillStyle='rgba(255,255,255,.9)';
+  for(let k=0;k<4;k++){
+    const x=((k*260 - G.dist*0.15)%1040+1040)%1040-80, y=40+(k%2)*35;
+    ctx.beginPath(); ctx.arc(x,y,18,0,7); ctx.arc(x+22,y-8,22,0,7); ctx.arc(x+46,y,16,0,7); ctx.fill();
+  }
+  // Hügel
+  ctx.fillStyle=shade(col,60);
+  ctx.beginPath(); ctx.moveTo(0,GY);
+  for(let x=0;x<=W;x+=10) ctx.lineTo(x, GY-55-Math.sin((x+G.dist*0.35)/90)*22);
+  ctx.lineTo(W,GY); ctx.fill();
+  ctx.fillStyle=shade(col,25);
+  ctx.beginPath(); ctx.moveTo(0,GY);
+  for(let x=0;x<=W;x+=10) ctx.lineTo(x, GY-22-Math.sin((x+G.dist*0.6)/55)*12);
+  ctx.lineTo(W,GY); ctx.fill();
+  // Boden
+  ctx.fillStyle='#7cb518'; ctx.fillRect(0,GY,W,8);
+  ctx.fillStyle='#a47148'; ctx.fillRect(0,GY+8,W,H-GY);
+  ctx.fillStyle='#8b5e34';
+  for(let x=-(G.dist%40);x<W;x+=40) ctx.fillRect(x,GY+18,18,4);
+  // Zahlengeraden-Markierungen am Boden
+  ctx.fillStyle='rgba(255,255,255,.85)'; ctx.font='bold 11px sans-serif'; ctx.textAlign='center';
+  const off=G.dist%120;
+  for(let x=-off;x<W+120;x+=120){ const n=Math.round((x+G.dist)/120)-3; ctx.fillRect(x-1,GY+26,2,8); ctx.fillText(n<0?'−'+(-n):String(n),x,GY+46); }
+  // Tor / Ziel
+  if(G.item) drawItem(G.item,t);
+  // Hindernisse
+  G.obstacles.forEach(drawObstacle);
+  // Spieler
+  if(!(G.invuln>0 && Math.floor(G.invuln/5)%2===0)) drawPlayer(col);
+  // Partikel
+  ctx.fillStyle='#ffd166';
+  G.particles.forEach(q=>{ctx.globalAlpha=Math.max(0,q.life/40);ctx.beginPath();ctx.arc(q.x,q.y,4,0,7);ctx.fill();});
+  ctx.globalAlpha=1;
+  // HUD im Canvas
+  ctx.fillStyle='rgba(255,255,255,.85)'; roundRect(12,12,170,30,15); ctx.fill();
+  ctx.fillStyle='#22263a'; ctx.font='bold 15px sans-serif'; ctx.textAlign='left';
+  ctx.fillText(G.q<G.tasks.length?`Aufgabe ${G.q+1} von ${G.tasks.length}`:'Auf ins Ziel!',26,32);
+  if(G.paused){ ctx.fillStyle='rgba(0,0,0,.35)'; ctx.fillRect(0,0,W,H); ctx.fillStyle='#fff'; ctx.font='bold 32px sans-serif'; ctx.textAlign='center'; ctx.fillText('⏸ Pause',W/2,H/2); }
+  ctx.restore();
+}
+function roundRect(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function drawObstacle(o){
+  if(o.type==='low'){
+    ctx.fillStyle=o.hit?'#bbb':'#d4a373'; ctx.strokeStyle='#7f5539'; ctx.lineWidth=3;
+    roundRect(o.x,GY-38,o.w,38,4); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(o.x+3,GY-35); ctx.lineTo(o.x+o.w-3,GY-3); ctx.moveTo(o.x+o.w-3,GY-35); ctx.lineTo(o.x+3,GY-3); ctx.strokeStyle='rgba(127,85,57,.4)'; ctx.stroke();
+    ctx.fillStyle='#fff'; roundRect(o.x+3,GY-27,o.w-6,16,4); ctx.fill();
+    ctx.fillStyle='#22263a'; ctx.font='bold 12px sans-serif'; ctx.textAlign='center'; ctx.fillText(o.label,o.x+o.w/2,GY-15);
+  } else {
+    const by=GY-46;
+    ctx.strokeStyle='#6c584c'; ctx.lineWidth=3;
+    ctx.beginPath(); ctx.moveTo(o.x+10,0); ctx.lineTo(o.x+10,by-14); ctx.moveTo(o.x+o.w-10,0); ctx.lineTo(o.x+o.w-10,by-14); ctx.stroke();
+    ctx.fillStyle=o.hit?'#bbb':'#e63946'; roundRect(o.x,by-18,o.w,18,5); ctx.fill();
+    ctx.fillStyle='#fff';
+    for(let k=0;k<3;k++){ ctx.beginPath(); ctx.moveTo(o.x+6+k*16,by-18); ctx.lineTo(o.x+14+k*16,by-18); ctx.lineTo(o.x+8+k*16,by); ctx.lineTo(o.x+k*16,by); ctx.closePath(); ctx.fill(); }
+    ctx.fillStyle='#22263a'; ctx.font='bold 11px sans-serif'; ctx.textAlign='center'; ctx.fillText('⬇',o.x+o.w/2,by+14);
+  }
+}
+function drawItem(it,t){
+  const x=it.x;
+  if(it.type==='gate'){
+    const glow=0.5+0.5*Math.sin(t/200);
+    ctx.fillStyle='#6d597a'; ctx.fillRect(x-4,GY-120,10,120); ctx.fillRect(x+70,GY-120,10,120);
+    ctx.fillStyle=`rgba(255,209,102,${0.25+glow*0.35})`; ctx.fillRect(x+6,GY-112,64,112);
+    ctx.fillStyle='#6d597a'; roundRect(x-10,GY-138,96,24,10); ctx.fill();
+    ctx.fillStyle='#ffd166'; ctx.beginPath(); ctx.arc(x+38,GY-70,22,0,7); ctx.fill();
+    ctx.fillStyle='#22263a'; ctx.font='bold 30px sans-serif'; ctx.textAlign='center'; ctx.fillText('?',x+38,GY-59);
+    ctx.fillStyle='#fff'; ctx.font='bold 12px sans-serif'; ctx.fillText('AUFGABE',x+38,GY-122);
+  } else {
+    ctx.fillStyle='#555'; ctx.fillRect(x,GY-150,6,150);
+    for(let r=0;r<4;r++) for(let c=0;c<6;c++){ ctx.fillStyle=(r+c)%2?'#22263a':'#fff'; ctx.fillRect(x+6+c*10,GY-150+r*10,10,10); }
+    ctx.fillStyle='#22263a'; ctx.font='bold 14px sans-serif'; ctx.textAlign='left'; ctx.fillText('ZIEL',x+12,GY-96);
+  }
+}
+function drawPlayer(col){
+  const p=G.player, x=PX, y=p.y;
+  ctx.strokeStyle='#22263a'; ctx.lineCap='round'; ctx.lineJoin='round'; ctx.lineWidth=5;
+  const ph=G.phase==='run'&&!G.paused? G.dist*0.09 : 0;
+  // Schatten
+  ctx.fillStyle='rgba(0,0,0,.18)'; ctx.beginPath(); ctx.ellipse(x,GY+3,16*(1-(GY-y)/250),4,0,0,7); ctx.fill();
+  if(p.duck){
+    const hip=[x-6,y-14], sh=[x+10,y-24];
+    ctx.beginPath(); ctx.moveTo(hip[0],hip[1]); ctx.lineTo(x-14,y-4); ctx.lineTo(x-4,y); ctx.moveTo(hip[0],hip[1]); ctx.lineTo(x+2,y-6); ctx.lineTo(x+10,y); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(hip[0],hip[1]); ctx.lineTo(sh[0],sh[1]); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(sh[0],sh[1]); ctx.lineTo(x+20,y-12); ctx.stroke();
+    ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(x+20,y-30,8.5,0,7); ctx.fill(); ctx.stroke();
+    ctx.fillStyle=col; ctx.beginPath(); ctx.arc(x+20,y-32,9,Math.PI,0); ctx.fill();
+    return;
+  }
+  const hip=[x,y-30], sh=[x+2,y-52];
+  let a=Math.sin(ph)*0.7;
+  ctx.beginPath();
+  if(!p.ground){ ctx.moveTo(...hip); ctx.lineTo(x+12,y-18); ctx.lineTo(x+6,y-4); ctx.moveTo(...hip); ctx.lineTo(x-8,y-16); ctx.lineTo(x-16,y-8); }
+  else {
+    const k1=[hip[0]+Math.sin(a)*12,hip[1]+14], k2=[hip[0]-Math.sin(a)*12,hip[1]+14];
+    ctx.moveTo(...hip); ctx.lineTo(...k1); ctx.lineTo(k1[0]+Math.sin(a)*6-3,y);
+    ctx.moveTo(...hip); ctx.lineTo(...k2); ctx.lineTo(k2[0]-Math.sin(a)*6-3,y);
+  }
+  ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(...hip); ctx.lineTo(...sh); ctx.stroke();
+  ctx.beginPath();
+  if(!p.ground){ ctx.moveTo(...sh); ctx.lineTo(x+16,y-68); ctx.moveTo(...sh); ctx.lineTo(x-12,y-66); }
+  else { ctx.moveTo(...sh); ctx.lineTo(sh[0]-Math.sin(a)*14,sh[1]+16); ctx.moveTo(...sh); ctx.lineTo(sh[0]+Math.sin(a)*14,sh[1]+16); }
+  ctx.stroke();
+  ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(x+4,y-63,9,0,7); ctx.fill(); ctx.stroke();
+  ctx.fillStyle=col; ctx.beginPath(); ctx.arc(x+4,y-65,9.5,Math.PI,0); ctx.fill();
+  ctx.fillRect(x+4,y-67,13,4);
+  ctx.fillStyle='#22263a'; ctx.beginPath(); ctx.arc(x+8,y-62,1.8,0,7); ctx.fill();
+}
+
+function loop(t){
+  if(!G){raf=null;return;}
+  let dt=t-G.last; G.last=t; if(dt>50) dt=50;
+  if(G.phase==='run' && !G.paused) step(dt);
+  if(G) draw(t);
+  raf=requestAnimationFrame(loop);
+}
+
+/* ---------- Aufgaben ---------- */
+let QS=null; // Status der aktuellen Aufgabe
+function parseNum(s){
+  s=String(s).trim().replace(/[−–—]/g,'-').replace(/\s+/g,'').replace(/[°a-zA-ZäöüÄÖÜß€]/g,'').replace(/,/g,'.');
+  while(s.startsWith('(')&&s.endsWith(')')) s=s.slice(1,-1);
+  s=s.replace(/^\+/,'');
+  let m=s.match(/^(-?)\(?(-?\d*\.?\d+)\/(-?\d*\.?\d+)\)?$/);
+  if(m){ const v=parseFloat(m[2])/parseFloat(m[3]); return m[1]?-v:v; }
+  if(/^-?(\d+\.?\d*|\.\d+)$/.test(s)) return parseFloat(s);
+  return NaN;
+}
+function openQuestion(){
+  const task=G.tasks[G.q];
+  QS={task, wrong:0, hint:false, sol:false, solved:false};
+  document.getElementById('qNum').textContent=`Aufgabe ${G.q+1} / ${G.tasks.length}`;
+  document.getElementById('qTopic').textContent=task.from||STATIONS[G.st].name;
+  document.getElementById('qText').innerHTML=task.q;
+  const fig=document.getElementById('qFig');
+  fig.innerHTML= task.fig ? (task.fig.t==='line'?figLine(task.fig):figGrid(task.fig)) : '';
+  fig.style.display=task.fig?'flex':'none';
+  document.getElementById('qFb').textContent=''; document.getElementById('qFb').className='fb';
+  document.getElementById('qBoxes').innerHTML='';
+  document.getElementById('qBtns').style.display='flex';
+  document.getElementById('qHint').disabled=false; document.getElementById('qSol').disabled=false;
+  document.getElementById('qHint').classList.remove('pulse'); document.getElementById('qSol').classList.remove('pulse');
+  const ans=document.getElementById('qAnswer');
+  if(task.type==='mc'){
+    const opts=[...task.options].sort(()=>Math.random()-0.5);
+    ans.innerHTML=`<div class="mc">${opts.map(o=>`<button data-v="${encodeURIComponent(o)}">${o}</button>`).join('')}</div>`;
+    ans.querySelectorAll('button').forEach(b=>b.onclick=()=>checkMC(b));
+  } else {
+    ans.innerHTML=`<div class="answer"><input id="qIn" type="text" inputmode="text" autocomplete="off" placeholder="${task.type==='set'?'z. B. −2 ; 4':'Deine Antwort'}"><div class="pad"><button data-k="−">−</button><button data-k=",">,</button><button data-k="/">/</button>${task.type==='set'?'<button data-k=" ; ">;</button>':''}</div><button class="btn primary" id="qCheck">✔ Prüfen</button></div>`;
+    const inp=document.getElementById('qIn');
+    ans.querySelectorAll('.pad button').forEach(b=>b.onclick=()=>{inp.value+=b.dataset.k; inp.focus();});
+    const chk = task.type==='set' ? checkSet : checkNum;
+    document.getElementById('qCheck').onclick=chk;
+    inp.addEventListener('keydown',e=>{ if(e.key==='Enter'){e.preventDefault();chk();} e.stopPropagation(); });
+    if(task.type==='set') document.getElementById('qText').insertAdjacentHTML('beforeend','<br><small style="font-weight:600;opacity:.75">Trenne mehrere Zahlen mit einem Semikolon ( ; ).</small>');
+    setTimeout(()=>inp.focus(),60);
+  }
+  show('pQuestion'); updateHud();
+}
+function wrongAnswer(msg){
+  QS.wrong++; G.wrong++;
+  const fb=document.getElementById('qFb'); fb.className='fb bad';
+  fb.textContent=msg||['Leider falsch – versuch es nochmal! 💪','Noch nicht ganz. Schau dir den Hinweis an!','Nicht aufgeben! Hinweis oder Spickzettel helfen.'][Math.min(QS.wrong-1,2)];
+  if(QS.wrong>=1 && !QS.hint) document.getElementById('qHint').classList.add('pulse');
+  if(QS.wrong>=2) document.getElementById('qSol').classList.add('pulse');
+}
+function checkSet(){
+  if(QS.solved) return;
+  const inp=document.getElementById('qIn'), fb=document.getElementById('qFb');
+  const raw=inp.value.trim();
+  if(raw===''){ fb.textContent='Bitte gib die Zahlen ein.'; return; }
+  const parts=raw.split(/;|\bund\b|\|/).map(x=>x.trim()).filter(Boolean);
+  const vals=parts.map(parseNum);
+  if(vals.some(isNaN)){ fb.className='fb bad'; fb.textContent='Das kann ich nicht lesen. Beispiel: −3 ; 7'; return; }
+  const want=QS.task.answer, has=v=>vals.some(x=>Math.abs(x-v)<1e-6);
+  const hits=want.filter(has).length, extra=vals.filter(x=>!want.some(v=>Math.abs(x-v)<1e-6)).length;
+  if(hits===want.length && extra===0 && vals.length===want.length) return correct();
+  if(hits>0 && extra===0) return wrongAnswer('Fast! Das stimmt schon – aber es fehlt noch eine Zahl. 🔍');
+  if(hits>0) return wrongAnswer('Teilweise richtig – mindestens eine Zahl passt nicht. 🤔');
+  wrongAnswer(); inp.select();
+}
+function checkNum(){
+  if(QS.solved) return;
+  const inp=document.getElementById('qIn'), v=parseNum(inp.value), a=QS.task.answer;
+  if(inp.value.trim()===''){ document.getElementById('qFb').textContent='Bitte gib eine Zahl ein.'; return; }
+  if(isNaN(v)){ document.getElementById('qFb').className='fb bad'; document.getElementById('qFb').textContent='Das kann ich nicht lesen. Beispiele: −3  oder  2,5  oder  −3/4'; return; }
+  if(Math.abs(v-a)<1e-6) return correct();
+  if(a!==0 && Math.abs(v+a)<1e-6) return wrongAnswer('Fast! Der Betrag stimmt – prüfe das Vorzeichen. 🤔');
+  wrongAnswer();
+  inp.select();
+}
+function checkMC(b){
+  if(QS.solved) return;
+  if(decodeURIComponent(b.dataset.v)===QS.task.answer){ b.classList.add('right'); correct(); }
+  else { b.classList.add('wrong'); b.disabled=true; wrongAnswer(); }
+}
+function addBox(kind,title,html){
+  const d=document.createElement('div'); d.className='box '+kind; d.innerHTML=`<b class="t">${title}</b>${html}`;
+  document.getElementById('qBoxes').appendChild(d);
+}
+document.getElementById('qHint').onclick=()=>{
+  if(QS.hint) return; QS.hint=true; G.hints++;
+  document.getElementById('qHint').disabled=true; document.getElementById('qHint').classList.remove('pulse');
+  addBox('hint','💡 Hinweis',QS.task.hint);
+};
+document.getElementById('qSol').onclick=()=>{
+  if(QS.sol||QS.solved) return; QS.sol=true; G.sols++;
+  addBox('sol','🔍 Lösung',QS.task.sol);
+  finishQuestion(false);
+};
+document.getElementById('qCheat').onclick=()=>openCheat(cheatIndex());
+function correct(){
+  const fb=document.getElementById('qFb'); fb.className='fb good';
+  fb.textContent=['Richtig! 🎉','Super gemacht! ⭐','Klasse! ✔','Stark! 💪'][Math.floor(Math.random()*4)];
+  addBox('sol','✔ So geht\'s',QS.task.sol);
+  finishQuestion(true);
+}
+function finishQuestion(){
+  QS.solved=true;
+  G.penalty += QS.wrong + (QS.hint?1:0) + (QS.sol?2:0);
+  document.querySelectorAll('#qAnswer button, #qAnswer input').forEach(e=>e.disabled=true);
+  document.getElementById('qHint').disabled=true;
+  document.getElementById('qSol').disabled=true;
+  const btns=document.getElementById('qBtns');
+  const go=document.createElement('button'); go.className='btn primary'; go.id='qGo';
+  go.textContent= G.q+1<G.tasks.length ? '▶ Weiterlaufen' : '🏁 Ab ins Ziel';
+  go.onclick=continueRun; btns.prepend(go);
+  setTimeout(()=>go.focus(),50);
+}
+function continueRun(){
+  hide('pQuestion');
+  const g=document.getElementById('qGo'); if(g) g.remove();
+  G.q++; G.item=null;
+  if(G.q<G.tasks.length){ G.nextItem='gate'; G.toSpawn=2+Math.min(G.q,3); }
+  else { G.nextItem='flag'; G.toSpawn=2; }
+  G.gap=G.speed*45; G.speed=G.base+0.35*G.q;
+  G.phase='run'; G.last=performance.now(); updateHud();
+}
+function finishStation(){
+  const pen=G.penalty, stars= pen<=1?3 : pen<=4?2 : 1;
+  progress[G.st]=Math.max(progress[G.st],stars); save();
+  document.getElementById('pdStars').innerHTML=`<span style="color:#f4a100">${'★'.repeat(stars)}</span><span style="color:#ccc">${'☆'.repeat(3-stars)}</span>`;
+  document.getElementById('pdInfo').innerHTML=`Fehlversuche: <b>${G.wrong}</b> · Hinweise: <b>${G.hints}</b> · Lösungen angesehen: <b>${G.sols}</b>`+
+    (stars<3?'<br><small>Tipp: Mit weniger Fehlversuchen und Hilfen gibt es mehr Sterne.</small>':'<br><b>Perfekt! 🌟</b>');
+  document.getElementById('pdNext').style.display = G.st<N_ST-1 ? '' : 'none';
+  show('pDone'); updateHud();
+}
+document.getElementById('psGo').onclick=begin;
+document.getElementById('poRetry').onclick=()=>startStation(G.st);
+document.getElementById('poMap').onclick=toMap;
+document.getElementById('pdAgain').onclick=()=>startStation(G.st);
+document.getElementById('pdMap').onclick=toMap;
+document.getElementById('pdNext').onclick=()=>startStation(G.st+1);
+document.getElementById('backMap').onclick=toMap;
+document.getElementById('gCheat').onclick=()=>openCheat(G?cheatIndex():null);
+
+/* ---------- Steuerung ---------- */
+const cJump=document.getElementById('cJump'), cDuck=document.getElementById('cDuck');
+cJump.addEventListener('pointerdown',e=>{e.preventDefault();pressJump();});
+cDuck.addEventListener('pointerdown',e=>{e.preventDefault();input.duck=true; if(G&&G.phase==='ready')begin();});
+['pointerup','pointerleave','pointercancel'].forEach(ev=>cDuck.addEventListener(ev,()=>input.duck=false));
+cv.addEventListener('pointerdown',e=>{
+  e.preventDefault();
+  const r=cv.getBoundingClientRect();
+  if(e.clientY-r.top < r.height*0.5) pressJump(); else { input.duck=true; if(G&&G.phase==='ready')begin(); }
+});
+['pointerup','pointerleave','pointercancel'].forEach(ev=>cv.addEventListener(ev,()=>input.duck=false));
+window.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){ if(!document.getElementById('cheat').hidden){hide('cheat');resumeFromCheat();} hide('stationCard'); hide('check'); return; }
+  const tag=(e.target.tagName||'').toLowerCase();
+  if(tag==='input'||tag==='textarea'||tag==='select') return;
+  if(!G || document.getElementById('game').hidden) return;
+  if(!document.getElementById('cheat').hidden) return;
+  if(G.phase==='question'){ if(e.key==='Enter'){const g=document.getElementById('qGo'); if(g){e.preventDefault();g.click();}} return; }
+  if([' ','ArrowUp','w','W'].includes(e.key)){ e.preventDefault(); if(e.repeat) return; pressJump(); }
+  else if(['ArrowDown','s','S'].includes(e.key)){ e.preventDefault(); input.duck=true; }
+  else if(e.key==='Enter' && G.phase==='ready'){ e.preventDefault(); begin(); }
+  else if((e.key==='p'||e.key==='P') && G.phase==='run'){ G.paused=!G.paused; G.last=performance.now(); }
+});
+window.addEventListener('keyup',e=>{ if(['ArrowDown','s','S'].includes(e.key)) input.duck=false; });
+window.addEventListener('blur',()=>{ input.duck=false; if(G&&G.phase==='run'){G.paused=true;} });
+document.addEventListener('visibilitychange',()=>{ if(document.hidden&&G&&G.phase==='run') G.paused=true; });
+cv.addEventListener('click',()=>{ if(G&&G.paused&&!cheatPaused){G.paused=false;G.last=performance.now();} });
+
+/* ---------- Start ---------- */
+buildCheat(); drawMap();
+</script>
+</body>
+</html>
