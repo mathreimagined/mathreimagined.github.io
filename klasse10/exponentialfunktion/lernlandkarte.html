@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lernlandkarte · Exponentialfunktionen & Logarithmus</title>
+<style>
+  :root{
+    --bg:#f4f6fb; --card:#ffffff; --ink:#1b2340; --muted:#6b7392; --line:#e3e7f1;
+    --blue:#3b82f6; --orange:#f59e0b; --green:#22c55e;
+    --red:#ef4444; --yellow:#facc15; --ok:#16a34a; --bad:#dc2626;
+    --navy:#1e2a5a; --radius:18px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
+  button{font:inherit;cursor:pointer}
+  header{background:linear-gradient(120deg,#1e2a5a,#3b4fa8);color:#fff;padding:22px 20px 26px}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 16px}
+  header .top{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+  header h1{margin:0;font-size:clamp(1.3rem,3vw,1.9rem);letter-spacing:-.01em}
+  header p{margin:4px 0 0;opacity:.85}
+  .hbtns{display:flex;gap:8px;flex-wrap:wrap}
+  .hbtn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;padding:8px 14px;border-radius:999px}
+  .hbtn:hover{background:rgba(255,255,255,.25)}
+  .progress{margin-top:18px;display:flex;align-items:center;gap:14px}
+  .bar{flex:1;height:14px;background:rgba(255,255,255,.2);border-radius:999px;overflow:hidden}
+  .bar>div{height:100%;width:0;background:linear-gradient(90deg,#4ade80,#22c55e);border-radius:999px;transition:width .5s}
+  .progress span{font-weight:700;white-space:nowrap}
+
+  main{padding:22px 0 60px}
+  .card{background:var(--card);border-radius:var(--radius);box-shadow:0 2px 10px rgba(30,42,90,.06);padding:20px}
+  .howto{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:18px}
+  .howto div{background:var(--card);border-radius:14px;padding:12px 14px;font-size:.93rem;box-shadow:0 1px 6px rgba(30,42,90,.05)}
+  .howto b{display:block;font-size:1.3rem}
+
+  #map svg{width:100%;height:auto;display:block}
+  .node{cursor:pointer}
+  .node:hover circle.main{filter:brightness(1.08)}
+  .node:focus{outline:none}
+  .node:focus circle.main{stroke:#1e2a5a;stroke-width:4}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:.85rem;color:var(--muted);margin-top:6px}
+  .legend i{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+
+  #station{margin-top:22px;scroll-margin-top:12px}
+  .shead{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .badge{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:1.4rem;flex:none}
+  .shead h2{margin:0;font-size:1.35rem}
+  .shead .tag{font-size:.8rem;color:var(--muted)}
+  .can{margin:14px 0;padding:12px 14px;border-left:4px solid var(--line);background:#f8f9fd;border-radius:10px}
+  .ampel{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:6px}
+  .ampel .lbl{font-size:.9rem;color:var(--muted);margin-right:4px}
+  .ampel button{border:2px solid var(--line);background:#fff;border-radius:999px;padding:6px 12px;font-size:.9rem}
+  .ampel button .dot{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+  .ampel button.on{border-color:var(--ink);font-weight:700}
+
+  .task{border:1px solid var(--line);border-radius:14px;padding:16px;margin-top:14px;transition:border-color .3s, background .3s}
+  .task.done{border-color:#86efac;background:#f0fdf4}
+  .task .q{font-weight:600}
+  .task .q .no{display:inline-block;background:var(--navy);color:#fff;border-radius:8px;padding:0 8px;margin-right:8px;font-size:.85rem}
+  .fields{display:flex;flex-wrap:wrap;gap:10px 18px;margin:12px 0}
+  .field{display:flex;align-items:center;gap:6px}
+  .field input,.field select{font:inherit;padding:7px 10px;border:2px solid var(--line);border-radius:10px;width:110px;background:#fff}
+  .field select{width:auto}
+  .field.ok input,.field.ok select{border-color:var(--ok);background:#f0fdf4}
+  .field.bad input,.field.bad select{border-color:var(--bad);background:#fef2f2}
+  .actions{display:flex;gap:8px;flex-wrap:wrap}
+  .btn{border:none;border-radius:10px;padding:8px 14px;font-weight:600}
+  .btn.primary{background:var(--navy);color:#fff}
+  .btn.ghost{background:#eef1f8;color:var(--ink)}
+  .btn:hover{filter:brightness(1.07)}
+  .fb{margin-top:10px;font-weight:600}
+  .fb.ok{color:var(--ok)} .fb.bad{color:var(--bad)}
+  .hint,.sol{margin-top:10px;padding:10px 14px;border-radius:10px;font-size:.95rem}
+  .hint{background:#fffbeb;border:1px solid #fde68a}
+  .sol{background:#eff6ff;border:1px solid #bfdbfe}
+  table.t{border-collapse:collapse;margin:8px 0;font-size:.95rem}
+  table.t td,table.t th{border:1px solid var(--line);padding:4px 12px;text-align:center}
+  table.t th{background:#f3f5fb}
+  .nav{display:flex;justify-content:space-between;margin-top:20px;gap:10px}
+  .after{margin-top:22px;padding-top:16px;border-top:1px dashed var(--line)}
+
+  .modal{position:fixed;inset:0;background:rgba(15,20,45,.55);display:none;align-items:flex-start;justify-content:center;padding:30px 14px;overflow:auto;z-index:10}
+  .modal.open{display:flex}
+  .modal .card{max-width:720px;width:100%}
+  .modal h2{margin-top:0}
+  .modal h3{margin:18px 0 6px;color:#3b4fa8}
+  .close{float:right;border:none;background:#eef1f8;border-radius:50%;width:36px;height:36px;font-size:1.2rem}
+  .formula{font-size:1.15rem;font-weight:700;background:#fff8e1;border-radius:10px;padding:8px 12px;display:inline-block}
+  .overview td{text-align:left}
+  .overview td:first-child{text-align:center;font-weight:700}
+  .pill{display:inline-block;width:14px;height:14px;border-radius:50%;border:2px solid var(--line);vertical-align:-2px}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(120px);background:var(--navy);color:#fff;padding:12px 20px;border-radius:999px;font-weight:700;transition:transform .35s,opacity .35s;z-index:20;opacity:0;visibility:hidden}
+  .toast.show{transform:translateX(-50%) translateY(0);opacity:1;visibility:visible}
+  .frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;font-size:.95em;line-height:1.2;margin:2px 3px}
+  .frac>span:first-child{border-bottom:1.5px solid currentColor;padding:0 3px}
+  .modal .card.wide{max-width:880px}
+  .modal h4{margin:14px 0 4px}
+  table.t.left td{text-align:left}
+  svg.plot{width:100%;height:auto;display:block;border:1px solid var(--line);border-radius:8px}
+  .plots4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px 0}
+  .plotwrap{max-width:300px;margin:12px 0}
+  .two{display:grid;grid-template-columns:1.2fr 1fr;gap:16px;align-items:start}
+  .cap{font-size:.85rem;color:var(--muted);margin:4px 0 0}
+  .ex{background:#f3f5fb;border-radius:10px;padding:8px 12px;font-size:.95rem}
+  .drawbox{max-width:360px;margin:12px 0}
+  .drawbox svg{cursor:crosshair}
+  .drawbox .dhint{font-size:.85rem;color:var(--muted);margin-top:4px}
+  @media (max-width:700px){ .plots4{grid-template-columns:repeat(2,1fr)} .two{grid-template-columns:1fr} }
+  @media (max-width:600px){ .card{padding:16px} .field input{width:90px} }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <h1>Lernlandkarte: Exponentialfunktionen & Logarithmus</h1>
+        <p>Dein Weg zur Klausur – Station für Station.</p>
+      </div>
+      <div class="hbtns">
+        <button class="hbtn" data-open="spick">📌 Spickzettel</button>
+        <button class="hbtn" data-open="overview">📋 Mein Stand</button>
+        <button class="hbtn" id="reset">↺ Neu starten</button>
+      </div>
+    </div>
+    <div class="progress"><div class="bar"><div id="pbar"></div></div><span id="ptext">0 / 0 Aufgaben</span></div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="howto">
+    <div><b>1</b>Klick auf eine Station und schätz dich mit der Ampel ein.</div>
+    <div><b>2</b>Fang mit Rot und Gelb an. Grün kannst du später zur Wiederholung machen.</div>
+    <div><b>3</b>Rechne im Heft, gib dein Ergebnis ein und lass es prüfen. Runde auf 2 Nachkommastellen.</div>
+    <div><b>4</b>Hängst du fest? Erst den Tipp, dann den Lösungsweg anschauen.</div>
+  </div>
+
+  <section id="map" class="card">
+    <svg viewBox="0 0 1000 700" role="img" aria-label="Lernlandkarte mit 8 Stationen"></svg>
+    <div class="legend">
+      <span><i style="background:var(--blue)"></i>Wiederholung</span>
+      <span><i style="background:var(--orange)"></i>Neu: Logarithmus</span>
+      <span><i style="background:var(--green)"></i>Anwendung</span>
+      <span>Der Ring zeigt deine Ampel · ✓ = alle Aufgaben gelöst</span>
+    </div>
+  </section>
+
+  <section id="station" class="card" hidden></section>
+</main>
+
+<div class="modal" id="spick"><div class="card wide">
+  <button class="close" data-close>×</button>
+  <h2>📌 Spickzettel</h2>
+  <div id="spickbody"></div>
+</div></div>
+
+<div class="modal" id="overview"><div class="card">
+  <button class="close" data-close>×</button>
+  <h2>📋 Mein Stand</h2>
+  <p>Deine Einschätzung vor und nach dem Üben. Mach einen Screenshot, wenn du ihn mitbringen willst.</p>
+  <table class="t overview" id="ovtable"></table>
+</div></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ---------- Koordinatensystem zeichnen ----------
+function plot(o) {
+  const { xmin, xmax, ymin, ymax } = o;
+  const u = o.unit || 34, W = (xmax - xmin) * u, H = (ymax - ymin) * u;
+  const X = x => (x - xmin) * u, Y = y => (ymax - y) * u;
+  const cid = 'c' + Math.random().toString(36).slice(2, 8);
+  let g = `<defs><clipPath id="${cid}"><rect x="0" y="0" width="${W}" height="${H}"/></clipPath></defs>`;
+  g += `<rect x="0" y="0" width="${W}" height="${H}" fill="#fff"/>`;
+  for (let x = Math.ceil(xmin); x <= xmax; x++) g += `<line x1="${X(x)}" y1="0" x2="${X(x)}" y2="${H}" stroke="#e5e8f0" stroke-width="1"/>`;
+  for (let y = Math.ceil(ymin); y <= ymax; y++) g += `<line x1="0" y1="${Y(y)}" x2="${W}" y2="${Y(y)}" stroke="#e5e8f0" stroke-width="1"/>`;
+  g += `<line x1="0" y1="${Y(0)}" x2="${W}" y2="${Y(0)}" stroke="#1b2340" stroke-width="1.6"/><line x1="${X(0)}" y1="0" x2="${X(0)}" y2="${H}" stroke="#1b2340" stroke-width="1.6"/>`;
+  for (let x = Math.ceil(xmin); x <= xmax; x++) if (x && x > xmin && x < xmax) g += `<text x="${X(x)}" y="${Y(0) + 13}" font-size="10" text-anchor="middle" fill="#6b7392">${x}</text>`;
+  for (let y = Math.ceil(ymin); y <= ymax; y++) if (y && y > ymin && y < ymax) g += `<text x="${X(0) - 5}" y="${Y(y) + 3.5}" font-size="10" text-anchor="end" fill="#6b7392">${y}</text>`;
+  (o.asym || []).forEach(a => g += `<line x1="0" y1="${Y(a)}" x2="${W}" y2="${Y(a)}" stroke="#ef4444" stroke-width="1.8" stroke-dasharray="6 5"/>`);
+  (o.fns || []).forEach(fn => {
+    let d = '', pen = false;
+    for (let i = 0; i <= 400; i++) {
+      const x = xmin + (xmax - xmin) * i / 400, y = fn.f(x);
+      if (!isFinite(y) || y > ymax + 3 || y < ymin - 3) { pen = false; continue; }
+      d += (pen ? 'L' : 'M') + X(x).toFixed(1) + ' ' + Y(y).toFixed(1) + ' '; pen = true;
+    }
+    g += `<path d="${d}" fill="none" stroke="${fn.color || '#3b82f6'}" stroke-width="${fn.w || 2.6}" ${fn.dash ? 'stroke-dasharray="5 4"' : ''} clip-path="url(#${cid})"/>`;
+  });
+  (o.points || []).forEach(p => {
+    g += `<circle cx="${X(p[0])}" cy="${Y(p[1])}" r="4.5" fill="${p[3] || '#1e2a5a'}"/>`;
+    if (p[2]) g += `<text x="${X(p[0]) + 7}" y="${Y(p[1]) - 7}" font-size="12" font-weight="700" fill="${p[3] || '#1e2a5a'}">${p[2]}</text>`;
+  });
+  if (o.title) g += `<rect x="6" y="6" width="26" height="26" rx="7" fill="#1e2a5a"/><text x="19" y="25" font-size="16" font-weight="800" fill="#fff" text-anchor="middle">${o.title}</text>`;
+  return `<svg class="plot" viewBox="0 0 ${W} ${H}" style="max-width:${o.max || W}px" data-v="${xmin},${xmax},${ymin},${ymax},${u}">${g}</svg>`;
+}
+const P2 = x => Math.pow(2, x);
+
+const B = 'blue', O = 'orange', G = 'green';
+const sup = s => `<sup>${s}</sup>`, sub = s => `<sub>${s}</sub>`;
+const fr = (a, b) => `<span class="frac"><span>${a}</span><span>${b}</span></span>`;
+const num = (label, v, tol = 0.011, unit = '') => ({ t: 'num', label, v, tol, unit });
+const sel = (label, opts, v) => ({ t: 'sel', label, opts, v });
+const WA = ['exponentielles Wachstum', 'exponentielle Abnahme', 'nicht exponentiell'];
+const ABCD = ['A', 'B', 'C', 'D'];
+
+const ZUORD = `<div class="plots4">
+  ${plot({ xmin: -3, xmax: 3, ymin: -4, ymax: 7, unit: 22, title: 'A', fns: [{ f: x => P2(x + 1) - 1 }], asym: [-1] })}
+  ${plot({ xmin: -3, xmax: 3, ymin: -4, ymax: 7, unit: 22, title: 'B', fns: [{ f: x => 3 * P2(x) }], asym: [0] })}
+  ${plot({ xmin: -3, xmax: 3, ymin: -4, ymax: 7, unit: 22, title: 'C', fns: [{ f: x => -P2(x) }], asym: [0] })}
+  ${plot({ xmin: -3, xmax: 3, ymin: -4, ymax: 7, unit: 22, title: 'D', fns: [{ f: x => Math.pow(0.5, x) + 2 }], asym: [2] })}
+</div>`;
+
+const STATIONS = [
+ { id: 1, color: B, title: 'Wachstum & Abnahme erkennen', can: 'Ich erkenne, ob ein Wachstum exponentiell ist, und kann den Wachstumsfaktor b aus Prozentangaben bestimmen (und umgekehrt).',
+   tasks: [
+    { q: 'Welche Tabelle zeigt exponentielles Wachstum, exponentielle Abnahme oder nichts davon?<table class="t"><tr><th>x</th><th>0</th><th>1</th><th>2</th><th>3</th></tr><tr><th>A</th><td>4</td><td>8</td><td>16</td><td>32</td></tr><tr><th>B</th><td>5</td><td>8</td><td>11</td><td>14</td></tr><tr><th>C</th><td>200</td><td>180</td><td>162</td><td>145,8</td></tr></table>',
+      f: [sel('A:', WA, WA[0]), sel('B:', WA, WA[2]), sel('C:', WA, WA[1])],
+      hint: 'Teile jeden Wert durch den vorherigen. Kommt immer dasselbe heraus, ist es exponentiell.',
+      sol: 'A: Quotient immer 2 → exponentielles Wachstum. B: Es kommt immer 3 dazu → linear, nicht exponentiell. C: Quotient immer 0,9 → exponentielle Abnahme.' },
+    { q: 'Gib den Wachstumsfaktor b an: a) Zunahme um 4 % &nbsp; b) Abnahme um 15 % &nbsp; c) Verdreifachung &nbsp; d) Abnahme um 2,5 %',
+      f: [num('a) b =', 1.04, 0.001), num('b) b =', 0.85, 0.001), num('c) b =', 3, 0.001), num('d) b =', 0.975, 0.0001)],
+      hint: `Wachstum um p %: b = 1 + ${fr('p','100')}. Abnahme um p %: b = 1 − ${fr('p','100')}.`,
+      sol: 'a) 1 + 0,04 = 1,04 &nbsp; b) 1 − 0,15 = 0,85 &nbsp; c) 3 &nbsp; d) 1 − 0,025 = 0,975' },
+    { q: 'Um wie viel Prozent ändert sich der Bestand pro Schritt? e) b = 1,25 &nbsp; f) b = 0,7',
+      f: [sel('e)', ['Zunahme', 'Abnahme'], 'Zunahme'), num('um', 25, 0.01, '%'), sel('f)', ['Zunahme', 'Abnahme'], 'Abnahme'), num('um', 30, 0.01, '%')],
+      sol: 'e) 1,25 = 1 + 0,25 → Zunahme um 25 %. f) 0,7 = 1 − 0,3 → Abnahme um 30 %.' },
+ ]},
+ { id: 2, color: B, title: 'Exponentialfunktion & Graph', can: `Ich kann zu f(x) = a · b${sup('x')} eine Wertetabelle anlegen, den Graphen zeichnen und Wachstum von Abnahme unterscheiden.`,
+   tasks: [
+    { q: `Ergänze die Wertetabelle für f(x) = 3 · 2${sup('x')}.`,
+      f: [num('f(−1) =', 1.5), num('f(0) =', 3), num('f(1) =', 6), num('f(2) =', 12), num('f(3) =', 24)],
+      hint: `2${sup('−1')} = 0,5. Also f(−1) = 3 · 0,5.`,
+      sol: `Den x-Wert für x einsetzen und ausrechnen:<br>
+f(−1) = 3 · 2${sup('−1')} = 3 · ${fr(1,2)} = 1,5<br>
+f(0) = 3 · 2${sup(0)} = 3 · 1 = 3<br>
+f(1) = 3 · 2${sup(1)} = 3 · 2 = 6<br>
+f(2) = 3 · 2${sup(2)} = 3 · 4 = 12<br>
+f(3) = 3 · 2${sup(3)} = 3 · 8 = 24` },
+    { q: `Wachstum oder Abnahme? a) f(x) = 5 · 0,6${sup('x')} &nbsp; b) g(x) = 0,5 · 1,3${sup('x')} &nbsp; c) h(x) = 2 · (${fr(1,2)})${sup('x')}`,
+      f: [sel('a)', ['Wachstum', 'Abnahme'], 'Abnahme'), sel('b)', ['Wachstum', 'Abnahme'], 'Wachstum'), sel('c)', ['Wachstum', 'Abnahme'], 'Abnahme')],
+      hint: 'Nur b entscheidet: größer als 1 oder kleiner als 1? Das a vorne spielt keine Rolle (solange a positiv ist).',
+      sol: 'a) b = 0,6 &lt; 1 → Abnahme &nbsp; b) b = 1,3 &gt; 1 → Wachstum &nbsp; c) b = 0,5 &lt; 1 → Abnahme' },
+ ]},
+ { id: 3, color: B, title: 'Parameter & Graphen', can: 'Ich kann die Wirkung der Parameter beschreiben, Graphen und Funktionsgleichungen zuordnen, Funktionsgleichungen aus Graphen ablesen und Graphen zeichnen.',
+   tasks: [
+    { q: `Wie entsteht der Graph von g(x) = −3 · 2${sup('x+1')} − 2 aus dem Graphen von f(x) = 2${sup('x')}?`,
+      f: [sel('Streckung:', ['gestreckt mit Faktor 3', 'gestaucht mit Faktor 3', 'weder noch'], 'gestreckt mit Faktor 3'), sel('Spiegelung:', ['an der x-Achse', 'an der y-Achse', 'keine'], 'an der x-Achse'),
+          sel('Verschiebung:', ['1 nach links', '1 nach rechts'], '1 nach links'), sel('und', ['2 nach oben', '2 nach unten'], '2 nach unten'), num('Asymptote: y =', -2, 0.001)],
+      hint: 'Minus vor a → Spiegelung an der x-Achse. „x + 1“ im Exponenten → nach LINKS. „− 2“ hinten → nach unten.',
+      sol: 'Faktor 3 (|a| &gt; 1) → gestreckt. Minuszeichen vor der 3 → an der x-Achse gespiegelt. x + 1 = x − (−1), also c = −1 → um 1 nach links. − 2 → um 2 nach unten, Asymptote y = −2.' },
+    { q: `f(x) = 2 · 1,5${sup('x')} + 3. Bestimme den Schnittpunkt mit der y-Achse und die Asymptote.`,
+      f: [num('f(0) =', 5, 0.001), num('Asymptote: y =', 3, 0.001)],
+      hint: `Setze x = 0 ein. Denk dran: 1,5${sup(0)} = 1. Die Asymptote liegt bei y = d.`,
+      sol: `x = 0 einsetzen: f(0) = 2 · 1,5${sup(0)} + 3 = 2 · 1 + 3 = 5. Asymptote y = 3. Achtung: Der y-Achsenabschnitt ist a + d, nicht a allein!` },
+    { q: `Ordne jeder Funktionsgleichung den passenden Graphen zu.${ZUORD}`,
+      f: [sel(`f${sub(1)}(x) = 3 · 2${sup('x')} →`, ABCD, 'B'), sel(`f${sub(2)}(x) = 0,5${sup('x')} + 2 →`, ABCD, 'D'), sel(`f${sub(3)}(x) = −2${sup('x')} →`, ABCD, 'C'), sel(`f${sub(4)}(x) = 2${sup('x+1')} − 1 →`, ABCD, 'A')],
+      hint: 'Schau zuerst auf die Asymptote (rot gestrichelt) und dann auf den Schnittpunkt mit der y-Achse. Steigt oder fällt der Graph?',
+      sol: `f${sub(1)}: B (durch (0 | 3), steigt, Asymptote y = 0). f${sub(2)}: D (fällt, Asymptote y = 2). f${sub(3)}: C (an der x-Achse gespiegelt, verläuft unterhalb). f${sub(4)}: A (Asymptote y = −1, durch (−1 | 0)).` },
+    { q: `Lies die Funktionsgleichung f(x) = a · b${sup('x')} aus dem Graphen ab.<div class="plotwrap">${plot({ xmin: -3, xmax: 4, ymin: -1, ymax: 8, unit: 30, fns: [{ f: x => 0.5 * P2(x) }], points: [[0, 0.5], [1, 1], [2, 2], [3, 4]] })}</div>`,
+      f: [num('a =', 0.5, 0.001), num('b =', 2, 0.001)],
+      hint: 'a ist der Schnittpunkt mit der y-Achse. Gehst du 1 nach rechts, wird der y-Wert mit b multipliziert.',
+      sol: `Schnittpunkt (0 | 0,5) → a = 0,5. Von x = 0 nach x = 1 verdoppelt sich der Wert (0,5 → 1) → b = 2. f(x) = 0,5 · 2${sup('x')}` },
+    { q: `Lies die Funktionsgleichung f(x) = a · b${sup('x')} + d aus dem Graphen ab. Die Asymptote ist rot gestrichelt.<div class="plotwrap">${plot({ xmin: -2, xmax: 5, ymin: -1, ymax: 7, unit: 30, fns: [{ f: x => 2 * Math.pow(0.5, x) + 1 }], asym: [1], points: [[-1, 5], [0, 3], [1, 2]] })}</div>`,
+      f: [num('d =', 1, 0.001), num('a =', 2, 0.001), num('b =', 0.5, 0.001)],
+      hint: 'Erst d = Asymptote. Dann den Abstand zur Asymptote ansehen: bei x = 0 ist er a, bei x = 1 ist er a · b.',
+      sol: `Asymptote y = 1 → d = 1. Schnittpunkt (0 | 3) → a = 3 − 1 = 2. Bei x = 1: Abstand zur Asymptote 2 − 1 = 1 = 2 · b → b = 0,5. f(x) = 2 · 0,5${sup('x')} + 1` },
+    { q: `Zeichne den Graphen von f(x) = 2${sup('x−2')} + 1. Gib zuerst die Verschiebung und die Asymptote an. Klicke dann ins Koordinatensystem und setze die Punkte für x = 1, 2, 3 und 4.`,
+      f: [sel('Verschiebung:', ['2 nach links', '2 nach rechts'], '2 nach rechts'), sel('und', ['1 nach oben', '1 nach unten'], '1 nach oben'), num('Asymptote: y =', 1, 0.001)],
+      draw: { f: x => P2(x - 2) + 1, xs: [1, 2, 3, 4], view: { xmin: -2, xmax: 6, ymin: -1, ymax: 7, unit: 38 }, asym: 1 },
+      hint: `Ankerpunkt: Bei 2${sup('x')} ist (0 | 1) der Ankerpunkt. Verschiebe ihn um 2 nach rechts und 1 nach oben → (2 | 2). Einen Schritt nach rechts verdoppelt sich der Abstand zur Asymptote.`,
+      sol: `Asymptote y = 1. Ankerpunkt (2 | 2). Weitere Punkte durch Einsetzen:<br>
+f(1) = 2${sup('1−2')} + 1 = 2${sup('−1')} + 1 = ${fr(1,2)} + 1 = 1,5<br>
+f(2) = 2${sup('2−2')} + 1 = 2${sup(0)} + 1 = 1 + 1 = 2<br>
+f(3) = 2${sup('3−2')} + 1 = 2${sup(1)} + 1 = 2 + 1 = 3<br>
+f(4) = 2${sup('4−2')} + 1 = 2${sup(2)} + 1 = 4 + 1 = 5<br>
+Der Graph nähert sich links der Asymptote, berührt sie aber nie.` },
+ ]},
+ { id: 4, color: B, title: 'Aus zwei Punkten aufstellen', can: 'Ich kann eine Exponentialfunktion aus zwei Punkten aufstellen – mit und ohne d.',
+   tasks: [
+    { q: `Bestimme f(x) = a · b${sup('x')} durch P(0 | 5) und Q(2 | 45).`,
+      f: [num('a =', 5, 0.001), num('b =', 3, 0.001)],
+      hint: `P liegt auf der y-Achse, also ist a sofort klar. Dann: a · b${sup('2')} = 45.`,
+      sol: `a = 5. 5 · b${sup('2')} = 45 → b${sup('2')} = 9 → b = 3. f(x) = 5 · 3${sup('x')}` },
+    { q: `Bestimme f(x) = a · b${sup('x')} durch P(1 | 3) und Q(5 | 48).`,
+      f: [num('a =', 1.5, 0.001), num('b =', 2, 0.001)],
+      hint: `Größeres x durch kleineres teilen: 48 : 3 = b${sup('5−1')} = b${sup('4')}. Dann die 4. Wurzel ziehen.`,
+      sol: `48 : 3 = 16 = b${sup('4')} → b = 2. Einsetzen: a · 2 = 3 → a = 1,5. f(x) = 1,5 · 2${sup('x')}` },
+    { q: `Bestimme f(x) = a · b${sup('x')} durch P(1 | 100) und Q(4 | 12,5).`,
+      f: [num('a =', 200, 0.001), num('b =', 0.5, 0.001)],
+      hint: `Q hat das größere x: 12,5 : 100 = b${sup('3')}.`,
+      sol: `b${sup('3')} = 12,5 : 100 = 0,125 → b = 0,5. Dann a · 0,5 = 100 → a = 200. f(x) = 200 · 0,5${sup('x')}` },
+    { q: 'Eine Pflanze ist nach 1 Woche 4 cm groß, nach 3 Wochen 16 cm. Stelle die Funktion auf (x in Wochen).',
+      f: [num('a =', 2, 0.001), num('b =', 2, 0.001)],
+      hint: 'Die Punkte sind (1 | 4) und (3 | 16).',
+      sol: `b${sup('2')} = 16 : 4 = 4 → b = 2. a · 2 = 4 → a = 2. f(x) = 2 · 2${sup('x')}` },
+    { q: `<b>Mit d:</b> Der Graph von f(x) = a · b${sup('x')} + d hat die Asymptote y = −2 und verläuft durch P(1 | 4) und Q(3 | 22). Bestimme a, b und d.`,
+      f: [num('d =', -2, 0.001), num('a =', 3, 0.001), num('b =', 2, 0.001)],
+      hint: 'Zuerst d von beiden y-Werten abziehen (hier: +2 rechnen!). Dann wie ohne d: größeres x durch kleineres teilen.',
+      sol: `d = −2. Ohne d: P'(1 | 6), Q'(3 | 24). 24 : 6 = 4 = b${sup('2')} → b = 2. a · 2 = 6 → a = 3. f(x) = 3 · 2${sup('x')} − 2` },
+    { q: `<b>Mit d:</b> Gib f(x) = a · b${sup('x')} + d an, wenn gilt: Die Asymptote liegt bei y = −1, der Graph schneidet die y-Achse in S(0 | 3) und es gilt f(1) = 7.`,
+      f: [num('d =', -1, 0.001), num('a =', 4, 0.001), num('b =', 2, 0.001)],
+      hint: 'f(0) = a + d. Dann f(1) = a · b + d nach b auflösen.',
+      sol: `d = −1. a + (−1) = 3 → a = 4. 4 · b − 1 = 7 → b = 2. f(x) = 4 · 2${sup('x')} − 1` },
+    { q: `<span style="color:#b45309">Profi (Sachkontext mit d):</span> Ein Tee kühlt in einem 20 °C warmen Raum ab: T(x) = a · b${sup('x')} + 20. Zu Beginn ist er 90 °C warm, nach 2 Minuten 76,7 °C. Bestimme a und b.`,
+      f: [num('a =', 70, 0.001), num('b =', 0.9, 0.001)],
+      hint: 'T(0) = a + 20 = 90. Bei T(2): erst 20 abziehen, dann durch a teilen.',
+      sol: `a + 20 = 90 → a = 70. 70 · b${sup('2')} + 20 = 76,7 → b${sup('2')} = 0,81 → b = 0,9. T(x) = 70 · 0,9${sup('x')} + 20` },
+ ]},
+ { id: 5, color: O, title: 'Logarithmus bestimmen', can: 'Ich kann Logarithmen ohne Taschenrechner bestimmen und zwischen Potenz und Logarithmus übersetzen.',
+   tasks: [
+    { q: 'Ohne Taschenrechner! Frag dich immer: „… hoch wie viel ist …?“',
+      f: [num(`log${sub(2)}(64) =`, 6, 0.001), num(`log${sub(11)}(121) =`, 2, 0.001), num(`log${sub(37)}(1) =`, 0, 0.001), num(`log${sub(2)}(${fr(1,8)}) =`, -3, 0.001)],
+      hint: `Brüche geben negative Hochzahlen: 2${sup('−3')} = ${fr(1,8)}. Jede Zahl hoch 0 ist 1.`,
+      sol: `6 (2${sup(6)} = 64) · 2 (11${sup(2)} = 121) · 0 (37${sup(0)} = 1) · −3 (2${sup('−3')} = ${fr(1,8)})` },
+    { q: `Ohne Taschenrechner. log ohne Basis bedeutet log${sub(10)}.`,
+      f: [num('log(1000) =', 3, 0.001), num(`log(${fr(1,1000)}) =`, -3, 0.001), num(`log${sub(7)}(7${sup(9)}) =`, 9, 0.001), num(`log${sub('a')}(a${sup(4)}) =`, 4, 0.001)],
+      hint: `log${sub('b')}(b${sup('n')}) = n: Die Hochzahl steht schon da!`,
+      sol: `log(1000) = 3 · log(${fr(1,1000)}) = −3 (10${sup('−3')} = ${fr(1,1000)}) · log${sub(7)}(7${sup(9)}) = 9 · log${sub('a')}(a${sup(4)}) = 4` },
+    { q: `Übersetze: a) 6${sup('x')} = 30 als Logarithmus &nbsp; b) 2${sup(5)} = 32 als Logarithmus &nbsp; c) log${sub(3)}(81) = 4 als Potenz. Schreib es ins Heft und vergleiche.`,
+      sol: `a) x = log${sub(6)}(30) &nbsp; b) log${sub(2)}(32) = 5 &nbsp; c) 3${sup(4)} = 81` },
+ ]},
+ { id: 6, color: O, title: 'Exponentialgleichungen lösen', can: `Ich kann Exponentialgleichungen a · b${sup('x')} + d = c lösen – im Kopf und mit Taschenrechner.`,
+   tasks: [
+    { q: `Ohne Taschenrechner: a) 4${sup('x')} = 64 &nbsp; b) 2 · 3${sup('x')} = 162 &nbsp; c) 2 · 5${sup('x')} + 14 = 264`,
+      f: [num('a) x =', 3, 0.001), num('b) x =', 4, 0.001), num('c) x =', 3, 0.001)],
+      hint: 'Bei c) erst 14 abziehen, dann durch 2 teilen. Dann: 5 hoch wie viel ist …?',
+      sol: `a) 4${sup(3)} = 64 → x = 3 &nbsp; b) 3${sup('x')} = 81 → x = 4 &nbsp; c) 2 · 5${sup('x')} = 250 → 5${sup('x')} = 125 → x = 3` },
+    { q: `Mit Taschenrechner: d) 1,3${sup('x')} = 4 &nbsp; e) 25 · 1,08${sup('x')} = 100 &nbsp; f) 600 · 0,85${sup('x')} = 150`,
+      f: [num('d) x ≈', 5.28), num('e) x ≈', 18.01), num('f) x ≈', 8.53)],
+      hint: `Erst durch a teilen, dann log${sub('□')} benutzen. Beispiel e): 1,08${sup('x')} = 4.`,
+      sol: `d) x = log${sub('1,3')}(4) ≈ 5,28 &nbsp; e) 1,08${sup('x')} = 4 → x ≈ 18,01 &nbsp; f) 0,85${sup('x')} = 0,25 → x ≈ 8,53` },
+    { q: `Mit d und Taschenrechner: g) 60 · 0,9${sup('x')} + 20 = 40`,
+      f: [num('g) x ≈', 10.43)],
+      hint: 'Zuerst die 20 abziehen, dann durch 60 teilen.',
+      sol: `60 · 0,9${sup('x')} = 20 → 0,9${sup('x')} = ${fr(1,3)} → x = log${sub('0,9')}(${fr(1,3)}) ≈ 10,43` },
+ ]},
+ { id: 7, color: O, title: 'Logarithmus- & Potenzgesetze', can: 'Ich kann Logarithmus- und Potenzgesetze anwenden, Terme umformen und Gleichungen mit dem Potenzgesetz lösen.',
+   tasks: [
+    { q: 'Ohne Taschenrechner: Fasse zuerst zu einem Logarithmus zusammen, dann berechne.',
+      f: [num(`log${sub(6)}(4) + log${sub(6)}(9) =`, 2, 0.001), num(`log${sub(2)}(48) − log${sub(2)}(3) =`, 4, 0.001), num(`2 · log${sub(9)}(3) =`, 1, 0.001)],
+      hint: `Mal wird plus: log${sub(6)}(4) + log${sub(6)}(9) = log${sub(6)}(36). Hoch wird mal: 2 · log${sub(9)}(3) = log${sub(9)}(3${sup(2)}).`,
+      sol: `log${sub(6)}(36) = 2 · log${sub(2)}(16) = 4 · log${sub(9)}(9) = 1` },
+    { q: 'Richtig oder falsch?',
+      f: [sel('log(2 · 5) = log(2) · log(5)', ['richtig', 'falsch'], 'falsch'), sel('log(8) = 3 · log(2)', ['richtig', 'falsch'], 'richtig'), sel('log(6) − log(2) = log(4)', ['richtig', 'falsch'], 'falsch')],
+      sol: 'Falsch: log(2 · 5) = log(2) + log(5). Richtig, denn 8 = 2³. Falsch: log(6) − log(2) = log(6 : 2) = log(3).' },
+    { q: `Löse mit x = log(c) : log(b): a) 2${sup('x')} = 12 &nbsp; b) 1,5${sup('x')} = 20`,
+      f: [num('a) x ≈', 3.58), num('b) x ≈', 7.39)],
+      sol: 'a) x = log(12) : log(2) ≈ 3,58 &nbsp; b) x = log(20) : log(1,5) ≈ 7,39' },
+    { q: `Zeige, dass gilt: 4 · 2${sup('x−2')} + 1 = 2${sup('x')} + 1. Schreib die Umformung ins Heft und vergleiche.`,
+      hint: `Schreibe 4 als Zweierpotenz: 4 = 2${sup(2)}. Dann: Mal wird bei Potenzen mit gleicher Basis zu Plus im Exponenten.`,
+      sol: `4 · 2${sup('x−2')} + 1 = 2${sup(2)} · 2${sup('x−2')} + 1 = 2${sup('2 + x − 2')} + 1 = 2${sup('x')} + 1 ✓` },
+ ]},
+ { id: 8, color: G, title: 'Sachaufgaben (Klausurniveau)', can: 'Ich kann Sachaufgaben vollständig lösen: Funktion aufstellen, Werte und Zeitpunkte berechnen, Antwortsatz schreiben.',
+   tasks: [
+    { q: `<b>Viral-Video:</b> Ein Video hat 1 Tag nach Veröffentlichung 600 Aufrufe, nach 3 Tagen 2400. Die Aufrufe wachsen exponentiell. a) Stelle f(t) = a · b${sup('t')} auf. b) Um wie viel Prozent wachsen die Aufrufe pro Tag?`,
+      f: [num('a =', 300, 0.001), num('b =', 2, 0.001), num('Wachstum pro Tag:', 100, 0.01, '%')],
+      hint: 'Punkte (1 | 600) und (3 | 2400). b = 2 heißt: Verdopplung. Wie viel Prozent kommen dazu?',
+      sol: `b${sup(2)} = 2400 : 600 = 4 → b = 2. a · 2 = 600 → a = 300. f(t) = 300 · 2${sup('t')}. b = 2 = 1 + 1 → Wachstum um 100 % pro Tag.` },
+    { q: 'Viral-Video, weiter: c) Wie viele Aufrufe sind es nach 5 Tagen? d) Wann sind es 100 000 Aufrufe?',
+      f: [num('c)', 9600, 0.5, 'Aufrufe'), num('d) t ≈', 8.38, 0.02, 'Tage')],
+      hint: `d) 300 · 2${sup('t')} = 100 000 → erst durch 300 teilen.`,
+      sol: `c) t = 5 einsetzen: f(5) = 300 · 2${sup(5)} = 300 · 32 = 9600 Aufrufe. d) 2${sup('t')} ≈ 333,33 → t ≈ 8,38. Nach etwa 8,4 Tagen sind es 100 000 Aufrufe.` },
+    { q: 'Viral-Video, e) Ist das Modell auf Dauer realistisch? Begründe im Heft und vergleiche.',
+      sol: 'Nein. Die Zahl der möglichen Zuschauer ist begrenzt, das Wachstum wird irgendwann langsamer. Nach 30 Tagen wären es über 300 Milliarden Aufrufe – mehr als es Menschen gibt.' },
+    { q: `<b>Auto:</b> Ein Neuwagen kostet 24 000 € und verliert jedes Jahr 15 % an Wert. a) Stelle die Funktion auf. b) Wert nach 3 Jahren?`,
+      f: [num('a =', 24000, 0.5), num('b =', 0.85, 0.001), num('b) Wert ≈', 14739, 1.5, '€')],
+      hint: 'Abnahme um 15 %: b = 1 − 0,15.',
+      sol: `f(t) = 24 000 · 0,85${sup('t')}. t = 3 einsetzen: f(3) = 24 000 · 0,85${sup(3)} = 24 000 · 0,614125 ≈ 14 739 €` },
+    { q: 'Auto, weiter: c) Wann ist es weniger als 10 000 € wert? d) Wann hat es die Hälfte seines Werts verloren?',
+      f: [num('c) t ≈', 5.39, 0.02, 'Jahre'), num('d) t ≈', 4.27, 0.02, 'Jahre')],
+      hint: `c) 0,85${sup('t')} = 10 000 : 24 000. d) Halber Wert: 0,85${sup('t')} = 0,5.`,
+      sol: `c) 0,85${sup('t')} ≈ 0,4167 → t ≈ 5,39. Nach 6 Jahren ist es weniger als 10 000 € wert. d) 0,85${sup('t')} = 0,5 → t ≈ 4,27, also nach etwa 4,3 Jahren.` },
+    { q: '<b>Sparbuch mit Einzahlung:</b> Mia hat 1000 € auf dem Sparbuch, es gibt 2 % Zinsen pro Jahr. Zusätzlich zahlt sie am Ende jedes Jahres (nach der Verzinsung) 100 € ein. Berechne den Kontostand nach 1, 2 und 3 Jahren.',
+      f: [num('nach 1 Jahr:', 1120, 0.011, '€'), num('nach 2 Jahren:', 1242.4, 0.011, '€'), num('nach 3 Jahren:', 1367.25, 0.011, '€')],
+      hint: 'Schritt für Schritt: alter Kontostand · 1,02 + 100. Mit dem neuen Wert weiterrechnen.',
+      sol: '1000 · 1,02 + 100 = 1120 € → 1120 · 1,02 + 100 = 1242,40 € → 1242,40 · 1,02 + 100 ≈ 1367,25 €. Hier passt keine einfache Formel a · b<sup>x</sup> mehr, weil jedes Jahr etwas dazukommt.' },
+ ]},
+];
+
+// ---------- Spickzettel ----------
+const SPICK = `
+<h3>1 · Exponentielles Wachstum und Zerfall</h3>
+<p class="formula">f(x) = a · b${sup('x')}</p>
+<ul>
+  <li><b>a</b> = Startwert (Wert bei x = 0)</li>
+  <li><b>b</b> = Wachstumsfaktor: Pro Schritt wird mit b multipliziert.</li>
+  <li>Bedingungen: <b>b &gt; 0</b> und <b>b ≠ 1</b>. &nbsp; <b>b &gt; 1</b> → Wachstum. &nbsp; <b>0 &lt; b &lt; 1</b> → Abnahme.</li>
+  <li><b>Wachstum um p %:</b> b = 1 + ${fr('p','100')} &nbsp; (5 % → b = 1,05)</li>
+  <li><b>Abnahme um p %:</b> b = 1 − ${fr('p','100')} &nbsp; (20 % → b = 0,8)</li>
+  <li>Rückwärts: b = 1,3 → +30 % &nbsp;·&nbsp; b = 0,75 → −25 %</li>
+</ul>
+
+<h3>2 · Exponentialfunktion mit Parametern</h3>
+<p class="formula">f(x) = a · b${sup('x − c')} + d</p>
+<table class="t left">
+  <tr><th>Parameter</th><th>Wirkung auf den Graphen von b${sup('x')}</th></tr>
+  <tr><td>a &gt; 1</td><td>in y-Richtung <b>gestreckt</b> (steiler)</td></tr>
+  <tr><td>0 &lt; a &lt; 1</td><td>in y-Richtung <b>gestaucht</b> (flacher)</td></tr>
+  <tr><td>a &lt; 0</td><td>an der <b>x-Achse gespiegelt</b> (und mit |a| gestreckt/gestaucht)</td></tr>
+  <tr><td>b und ${fr(1,'b')}</td><td>2${sup('x')} und 0,5${sup('x')} sind an der <b>y-Achse gespiegelt</b></td></tr>
+  <tr><td>c &gt; 0, z. B. 2${sup('x−3')} (c = 3)</td><td>um 3 nach <b>rechts</b></td></tr>
+  <tr><td>c &lt; 0, z. B. 2${sup('x+3')} (c = −3)</td><td>um 3 nach <b>links</b> ⚠️</td></tr>
+  <tr><td>d &gt; 0, z. B. 2${sup('x')} + 4</td><td>um 4 nach <b>oben</b></td></tr>
+  <tr><td>d &lt; 0, z. B. 2${sup('x')} − 4</td><td>um 4 nach <b>unten</b></td></tr>
+</table>
+<p>Die <b>Asymptote</b> liegt immer bei <b>y = d</b>.</p>
+<p>⚠️ Vorsicht beim Ablesen: Steht im Exponenten x + 3, ist c = −3 – der Graph wird nach <b>links</b> verschoben.</p>
+
+<h4>Graph zeichnen (Ankerpunkt-Methode)</h4>
+<div class="two">
+<ol>
+  <li><b>Asymptote</b> y = d gestrichelt einzeichnen.</li>
+  <li><b>Ankerpunkt:</b> Bei b${sup('x')} ist (0 | 1) der Ankerpunkt. Er wird genauso verschoben wie der Graph. Allgemein: x so wählen, dass der Exponent 0 ist → y = a + d.</li>
+  <li><b>Weitere Punkte:</b> 1 nach rechts → Abstand zur Asymptote · b. 1 nach links → Abstand : b. (Oder Wertetabelle.)</li>
+  <li>Punkte verbinden. Der Graph nähert sich der Asymptote, <b>berührt sie aber nie</b>.</li>
+</ol>
+<div>${plot({ xmin: -3, xmax: 4, ymin: -1, ymax: 6, unit: 30, fns: [{ f: P2, color: '#b8c0d6', w: 2, dash: true }, { f: x => P2(x - 1) + 1 }], asym: [1], points: [[0, 1, '', '#9aa3bd'], [1, 2, 'Anker (1|2)', '#e11d48'], [2, 3], [3, 5]] })}
+<p class="cap">Beispiel: f(x) = 2${sup('x−1')} + 1 (blau) aus 2${sup('x')} (grau): 1 nach rechts, 1 nach oben.</p></div>
+</div>
+
+<h4>Funktionsgleichung f(x) = a · b${sup('x')} + d ablesen</h4>
+<ol>
+  <li><b>Asymptote</b> ablesen → d</li>
+  <li><b>Schnittpunkt mit der y-Achse</b> (0 | y${sub(0)}) → a = y${sub(0)} − d</li>
+  <li><b>Punkt bei x = 1</b> ablesen → f(1) − d = a · b → b = (f(1) − d) : a</li>
+  <li><b>Probe</b> mit einem weiteren Punkt</li>
+</ol>
+
+<h3>3 · Aus zwei Punkten aufstellen</h3>
+<h4>Fall 1: ohne d, also f(x) = a · b${sup('x')}</h4>
+<ol>
+  <li><b>Größeres x durch kleineres teilen:</b> y-Wert des Punktes mit dem größeren x durch den anderen y-Wert. Das ergibt b hoch (Abstand der x-Werte).</li>
+  <li>Wurzel ziehen → b</li>
+  <li>Einen Punkt einsetzen → a</li>
+</ol>
+<p class="ex">Beispiel: P(1 | 6), Q(3 | 54). 54 : 6 = 9 = b${sup('3−1')} = b${sup(2)} → b = 3. &nbsp; 6 = a · 3 → a = 2. &nbsp; f(x) = 2 · 3${sup('x')}</p>
+<h4>Fall 2: mit d, also f(x) = a · b${sup('x')} + d (d bekannt, z. B. über die Asymptote)</h4>
+<ol>
+  <li><b>Zuerst d von beiden y-Werten abziehen.</b></li>
+  <li>Dann weiter wie in Fall 1. Am Ende + d wieder dazuschreiben.</li>
+</ol>
+<p class="ex">Beispiel: Asymptote y = 2, P(0 | 5), Q(2 | 29). Ohne d: (0 | 3), (2 | 27). 27 : 3 = 9 = b${sup(2)} → b = 3, a = 3. &nbsp; f(x) = 3 · 3${sup('x')} + 2</p>
+
+<h3>4 · Logarithmus</h3>
+<p class="formula">b${sup('x')} = c ⇔ x = log${sub('b')}(c)</p>
+<p>Sprich: <b>„b hoch wie viel ist c?“</b> &nbsp; log${sub(2)}(8) = 3, weil 2${sup(3)} = 8.</p>
+<ul>
+  <li>log${sub('b')}(1) = 0 &nbsp;·&nbsp; log${sub('b')}(b) = 1 &nbsp;·&nbsp; log${sub('b')}(b${sup('n')}) = n</li>
+  <li>log ohne Basis = log${sub(10)}: log(100) = 2, log(${fr(1,100)}) = −2</li>
+</ul>
+
+<h3>5 · Exponentialgleichungen lösen: a · b${sup('x')} + d = c</h3>
+<ol>
+  <li>Falls vorhanden: <b>d abziehen</b></li>
+  <li><b>Durch a teilen</b></li>
+  <li><b>Logarithmus:</b> x = log${sub('b')}(…) &nbsp; oder &nbsp; x = log(…) : log(b)</li>
+  <li>Probe & Antwortsatz</li>
+</ol>
+
+<h3>6 · Gesetze</h3>
+<table class="t left">
+  <tr><th>Potenzgesetze</th><th>Logarithmusgesetze</th><th>Merksatz</th></tr>
+  <tr><td>b${sup('m')} · b${sup('n')} = b${sup('m+n')}</td><td>log(u · v) = log(u) + log(v)</td><td>Mal wird plus</td></tr>
+  <tr><td>b${sup('m')} : b${sup('n')} = b${sup('m−n')}</td><td>log(u : v) = log(u) − log(v)</td><td>Geteilt wird minus</td></tr>
+  <tr><td>(b${sup('m')})${sup('n')} = b${sup('m·n')}</td><td>log(u${sup('n')}) = n · log(u)</td><td>Hoch wird mal</td></tr>
+</table>
+<p>Nützlich zum Umformen: b${sup('x+2')} = b${sup('x')} · b${sup(2)} &nbsp;·&nbsp; b${sup('−n')} = ${fr(1,'b'+sup('n'))}, z. B. ${fr(1,4)} = 2${sup('−2')}</p>
+`;
+
+document.getElementById('spickbody').innerHTML = SPICK;
+
+const POS = { 1: [110, 120], 2: [370, 120], 3: [630, 120], 4: [880, 285], 5: [630, 440], 6: [370, 440], 7: [110, 440], 8: [230, 595] };
+const COL = { blue: '#3b82f6', orange: '#f59e0b', green: '#22c55e' };
+const AMP = { rot: '#ef4444', gelb: '#facc15', gruen: '#22c55e' };
+const KEY = 'lernlandkarte-exp-log-v2';
+
+let state = { before: {}, after: {}, done: {}, inputs: {}, draw: {} };
+try { const s = JSON.parse(localStorage.getItem(KEY)); if (s) state = Object.assign(state, s); } catch (e) {}
+state.draw = state.draw || {};
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} };
+
+const total = STATIONS.reduce((n, s) => n + s.tasks.length, 0);
+const tid = (s, i) => `${s}-${i}`;
+const stationDone = s => s.tasks.every((_, i) => state.done[tid(s.id, i)]);
+
+function toast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 2200); }
+
+function progress() {
+  const n = Object.values(state.done).filter(Boolean).length;
+  document.getElementById('pbar').style.width = (100 * n / total) + '%';
+  document.getElementById('ptext').textContent = `${n} / ${total} Aufgaben`;
+}
+
+function drawMap() {
+  const svg = document.querySelector('#map svg');
+  const pts = [[30, 30], ...STATIONS.map(s => POS[s.id]), [640, 595]];
+  let h = `<polyline points="${pts.map(p => p.join(',')).join(' ')}" fill="none" stroke="#cfd5e6" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="2 26"/>`;
+  h += `<text x="30" y="22" font-size="20" font-weight="800" fill="#6b7392">START</text>`;
+  h += `<g><rect x="640" y="559" width="320" height="72" rx="16" fill="#1e2a5a"/><text x="800" y="604" text-anchor="middle" font-size="26" font-weight="800" fill="#fff">🏁 Ziel: Klausur</text></g>`;
+  STATIONS.forEach(s => {
+    const [x, y] = POS[s.id];
+    const a = state.after[s.id] || state.before[s.id];
+    const ring = a ? AMP[a] : '#e3e7f1';
+    const done = stationDone(s);
+    const lines = s.title.split(' & ').length > 1 ? [s.title.split(' & ')[0] + ' &', s.title.split(' & ')[1]] : wrap(s.title);
+    h += `<g class="node" tabindex="0" role="button" aria-label="Station ${s.id}: ${s.title}" data-id="${s.id}">
+      <circle cx="${x}" cy="${y}" r="52" fill="#fff" stroke="${ring}" stroke-width="10"/>
+      <circle class="main" cx="${x}" cy="${y}" r="40" fill="${COL[s.color]}"/>
+      <text x="${x}" y="${y + 11}" text-anchor="middle" font-size="32" font-weight="800" fill="#fff">${s.id}</text>
+      ${done ? `<circle cx="${x + 40}" cy="${y - 40}" r="16" fill="#16a34a" stroke="#fff" stroke-width="3"/><text x="${x + 40}" y="${y - 34}" text-anchor="middle" font-size="18" font-weight="800" fill="#fff">✓</text>` : ''}
+      ${lines.map((l, i) => `<text x="${x}" y="${y + 80 + i * 22}" text-anchor="middle" font-size="18" fill="#1b2340" stroke="#fff" stroke-width="7" paint-order="stroke" stroke-linejoin="round">${l}</text>`).join('')}
+    </g>`;
+  });
+  svg.innerHTML = h;
+  svg.querySelectorAll('.node').forEach(n => {
+    n.addEventListener('click', () => openStation(+n.dataset.id));
+    n.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openStation(+n.dataset.id); } });
+  });
+}
+function wrap(t) { const w = t.split(' '); if (t.length < 18) return [t]; const m = Math.ceil(w.length / 2); return [w.slice(0, m).join(' '), w.slice(m).join(' ')]; }
+
+function ampelHTML(sid, which) {
+  const cur = state[which][sid];
+  const label = which === 'before' ? 'Vor dem Üben:' : 'Nach dem Üben:';
+  const b = (k, txt) => `<button data-amp="${which}" data-k="${k}" class="${cur === k ? 'on' : ''}"><span class="dot" style="background:${AMP[k]}"></span>${txt}</button>`;
+  return `<div class="ampel"><span class="lbl">${label}</span>${b('rot', 'kann ich noch nicht')}${b('gelb', 'unsicher')}${b('gruen', 'sitzt!')}</div>`;
+}
+
+function openStation(id) {
+  const s = STATIONS.find(x => x.id === id);
+  const el = document.getElementById('station');
+  el.hidden = false;
+  let h = `<div class="shead"><div class="badge" style="background:${COL[s.color]}">${s.id}</div><div><div class="tag">Station ${s.id} von 8</div><h2>${s.title}</h2></div></div>
+    <div class="can" style="border-color:${COL[s.color]}">${s.can}</div>${ampelHTML(id, 'before')}`;
+  s.tasks.forEach((t, i) => {
+    const key = tid(id, i), done = state.done[key];
+    h += `<div class="task ${done ? 'done' : ''}" data-key="${key}">
+      <div class="q"><span class="no">${id}.${i + 1}</span>${t.q}</div>`;
+    if (t.f) {
+      h += `<div class="fields">` + t.f.map((f, j) => {
+        const v = (state.inputs[key] || [])[j] ?? '';
+        const inp = f.t === 'num'
+          ? `<input inputmode="decimal" autocomplete="off" value="${v}" data-j="${j}" aria-label="${f.label.replace(/<[^>]+>/g, '')}">`
+          : `<select data-j="${j}"><option value="">– wählen –</option>${f.opts.map(o => `<option ${o === v ? 'selected' : ''}>${o}</option>`).join('')}</select>`;
+        return `<label class="field"><span>${f.label}</span> ${inp} ${f.unit ? `<span>${f.unit}</span>` : ''}</label>`;
+      }).join('') + `</div>`;
+    }
+    if (t.draw) h += `<div class="drawbox"></div>`;
+    h += `<div class="actions" style="${t.f ? '' : 'margin-top:12px'}">
+      ${t.f ? `<button class="btn primary" data-act="check">Prüfen</button>` : `<button class="btn primary" data-act="self">${done ? '✓ Erledigt' : 'Hab ich – erledigt'}</button>`}
+      ${t.hint ? `<button class="btn ghost" data-act="hint">💡 Tipp</button>` : ''}
+      <button class="btn ghost" data-act="sol">Lösungsweg</button></div>
+      <div class="fb"></div>
+      ${t.hint ? `<div class="hint" hidden>💡 ${t.hint}</div>` : ''}
+      <div class="sol" hidden>${t.sol}</div></div>`;
+  });
+  h += `<div class="after">${ampelHTML(id, 'after')}</div>
+    <div class="nav"><button class="btn ghost" data-nav="${id - 1}" ${id === 1 ? 'disabled style="visibility:hidden"' : ''}>← Station ${id - 1}</button>
+    <button class="btn ghost" data-nav="${id + 1}" ${id === 8 ? 'disabled style="visibility:hidden"' : ''}>Station ${id + 1} →</button></div>`;
+  el.innerHTML = h;
+  el.querySelectorAll('.drawbox').forEach(db => renderDraw(db, ''));
+  el.scrollIntoView({ behavior: 'smooth' });
+}
+
+const getTask = key => { const [sid, i] = key.split('-').map(Number); return STATIONS.find(s => s.id === sid).tasks[i]; };
+function renderDraw(db, mode) {
+  const key = db.closest('.task').dataset.key, t = getTask(key), D = t.draw, v = D.view;
+  const pts = state.draw[key] || {};
+  const show = mode === 'solution' || mode === 'ok';
+  const points = Object.entries(pts).map(([x, y]) => {
+    let col = '#3b82f6';
+    if (mode) col = Math.abs(y - D.f(+x)) <= 0.26 ? '#16a34a' : '#dc2626';
+    return [+x, y, '', col];
+  });
+  db.innerHTML = plot({ ...v, fns: show ? [{ f: D.f, color: '#22c55e' }] : [], asym: show ? [D.asym] : [], points })
+    + `<div class="dhint">Klicke ins Koordinatensystem, um bei x = ${D.xs.join(', ')} einen Punkt zu setzen (erneut klicken ersetzt ihn). <button class="btn ghost" data-act="clear" style="padding:3px 10px">Punkte löschen</button></div>`;
+  const svg = db.querySelector('svg');
+  svg.addEventListener('click', e => {
+    const p = svg.createSVGPoint(); p.x = e.clientX; p.y = e.clientY;
+    const q = p.matrixTransform(svg.getScreenCTM().inverse());
+    const x = Math.round(q.x / v.unit + v.xmin), y = Math.round((v.ymax - q.y / v.unit) * 2) / 2;
+    if (!D.xs.includes(x)) { toast(`Setze Punkte nur bei x = ${D.xs.join(', ')}`); return; }
+    state.draw[key] = { ...(state.draw[key] || {}), [x]: y }; save(); renderDraw(db, '');
+  });
+}
+const parse = s => { s = String(s).trim().replace(/\s/g, '').replace(/−/g, '-').replace(/%|€/g, '').replace(',', '.'); if (s === '' || isNaN(+s)) return null; return +s; };
+
+document.getElementById('station').addEventListener('click', e => {
+  const amp = e.target.closest('[data-amp]');
+  if (amp) { const id = +document.querySelector('#station .badge').textContent; state[amp.dataset.amp][id] = amp.dataset.k; save(); drawMap(); openStationKeep(id); renderOverview(); return; }
+  const nav = e.target.closest('[data-nav]');
+  if (nav) { openStation(+nav.dataset.nav); return; }
+  const btn = e.target.closest('[data-act]'); if (!btn) return;
+  const box = btn.closest('.task'), key = box.dataset.key;
+  const [sid, i] = key.split('-').map(Number);
+  const t = STATIONS.find(s => s.id === sid).tasks[i];
+  const act = btn.dataset.act;
+  if (act === 'hint') box.querySelector('.hint').hidden ^= 1;
+  if (act === 'sol') { box.querySelector('.sol').hidden ^= 1; if (t.draw) renderDraw(box.querySelector('.drawbox'), box.querySelector('.sol').hidden ? '' : 'solution'); }
+  if (act === 'clear') { state.draw[key] = {}; save(); renderDraw(box.querySelector('.drawbox'), ''); return; }
+  if (act === 'self') { state.done[key] = true; box.classList.add('done'); btn.textContent = '✓ Erledigt'; afterDone(sid); }
+  if (act === 'check') {
+    let ok = true; const vals = [];
+    box.querySelectorAll('[data-j]').forEach(inp => {
+      const f = t.f[+inp.dataset.j]; vals[+inp.dataset.j] = inp.value;
+      const lab = inp.closest('.field');
+      let good = f.t === 'num' ? (parse(inp.value) !== null && Math.abs(parse(inp.value) - f.v) <= f.tol) : inp.value === f.v;
+      lab.classList.toggle('ok', good); lab.classList.toggle('bad', !good); if (!good) ok = false;
+    });
+    if (t.draw) {
+      const pts = state.draw[key] || {};
+      const dOk = t.draw.xs.every(x => pts[x] !== undefined && Math.abs(pts[x] - t.draw.f(x)) <= 0.26);
+      if (!dOk) ok = false;
+      renderDraw(box.querySelector('.drawbox'), dOk ? 'ok' : 'marks');
+    }
+    state.inputs[key] = vals;
+    const fb = box.querySelector('.fb');
+    if (ok) {
+      fb.className = 'fb ok'; fb.textContent = ['Stark! ✓', 'Sitzt! ✓', 'Richtig – weiter so! ✓', 'Perfekt! ✓'][Math.floor(Math.random() * 4)];
+      if (!state.done[key]) { state.done[key] = true; box.classList.add('done'); afterDone(sid); }
+    } else {
+      fb.className = 'fb bad'; fb.textContent = 'Noch nicht ganz. Was rot markiert ist, stimmt noch nicht – schau dir den Tipp an oder rechne nochmal.';
+    }
+    save();
+  }
+});
+function openStationKeep(id) { const y = window.scrollY; openStation(id); window.scrollTo(0, y); }
+function afterDone(sid) {
+  save(); progress(); drawMap();
+  const s = STATIONS.find(x => x.id === sid);
+  if (stationDone(s)) toast(`🎉 Station ${sid} geschafft!`);
+  if (Object.values(state.done).filter(Boolean).length === total) toast('🏁 Alle Stationen geschafft – du bist bereit für die Klausur!');
+}
+
+function renderOverview() {
+  const dot = k => k ? `<span class="pill" style="background:${AMP[k]};border-color:${AMP[k]}"></span>` : '<span class="pill"></span>';
+  let h = '<tr><th>Nr.</th><th>Ich kann …</th><th>vorher</th><th>nachher</th><th>gelöst</th></tr>';
+  STATIONS.forEach(s => {
+    const n = s.tasks.filter((_, i) => state.done[tid(s.id, i)]).length;
+    h += `<tr><td>${s.id}</td><td>${s.can}</td><td>${dot(state.before[s.id])}</td><td>${dot(state.after[s.id])}</td><td>${n}/${s.tasks.length}</td></tr>`;
+  });
+  document.getElementById('ovtable').innerHTML = h;
+}
+
+document.querySelectorAll('[data-open]').forEach(b => b.addEventListener('click', () => { renderOverview(); document.getElementById(b.dataset.open).classList.add('open'); }));
+document.querySelectorAll('.modal').forEach(m => m.addEventListener('click', e => { if (e.target === m || e.target.closest('[data-close]')) m.classList.remove('open'); }));
+document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.modal.open').forEach(m => m.classList.remove('open')); });
+document.getElementById('reset').addEventListener('click', () => {
+  if (!document.getElementById('reset').dataset.confirm) { document.getElementById('reset').dataset.confirm = 1; document.getElementById('reset').textContent = 'Wirklich? Nochmal klicken'; setTimeout(() => { delete document.getElementById('reset').dataset.confirm; document.getElementById('reset').textContent = '↺ Neu starten'; }, 3000); return; }
+  state = { before: {}, after: {}, done: {}, inputs: {}, draw: {} }; save(); location.reload();
+});
+
+drawMap(); progress();
+</script>
+</body>
+</html>
